@@ -1,0 +1,294 @@
+---
+title: "BIOSTAT 702 Homework 1 - Due 09/25/2022"
+author: "Will Powell"
+date: "09/19/2022"
+output:
+  bookdown::word_document2:
+    reference_docx: template_README_and_styles_3.docx
+    number_sections: no
+  word_document: default
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r setup, echo=FALSE, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, fig.width=5, fig.height=5)
+
+
+# ######################################################################### #
+##                                                                         ##
+##  Author: tina.davenport@duke.edu                                        ##
+##  Program: BIOSTAT702_HW02_Lname_Fname.rmd                               ##
+##  Purpose: This program drafts the homework and responses                ##
+##                                                                         ##
+##  Input files:  [list data or source files]                              ##
+##                                                                         ##
+##  Output files: BIOSTAT702_HW02_Lname_Fname.docx - Word file of answers  ##
+##                to homework.                                             ##
+##                                                                         ##
+##  Change Log:                                                            ##
+##  09/18/2022 File started                                                ##
+##                                                                         ##
+# ######################################################################### #
+
+library(tidyverse)
+library(lubridate)
+library(knitr)
+
+options(knitr.kable.NA="")
+options(max.print = .Machine$integer.max)  # don't limit console printing
+
+rm(list=ls())
+```
+
+
+# Question (6pts)
+
+Let $Y_1,Y_2,\ldots, Y_n$ be an iid sample of $Y \sim N(\mu_Y, \sigma_Y^2)$. Let $X=\bar{Y}=(1/n)\sum_i Y_i$.
+
+<br>
+
+A. (1pt) What is $f_X(\cdot)$, then distribution of $X$ (in terms of $\mu_Y$ and $\sigma_Y^2$).
+
+The distributin of X is $X \sim N(\mu_Y, \sigma_Y^2 / n)$
+
+
+<br>
+
+B. (2pts) Let $X_1,X_2,\ldots, X_m$ be a random sample of $Y \sim f_X(\cdot)$, where $f_X(\cdot)$ is the distribution you just specified in part (A). Let $W=\bar{X}=(1/m)\sum_i X_i$. What is $f_W(\cdot)$, the distribution of $W$?
+
+$W \sim N(\mu_Y, \sigma_Y^2 / mn)$ 
+
+
+<br>
+
+C. (2pts) Let $V=aW+b$. What is $f_V(\cdot)$, the distribution of $V$?
+
+$V \sim N(a\mu_Y + b, a^2\sigma_Y^2 / mn)$ 
+
+
+<br>
+
+
+# Question (10pts)
+
+Let $Y_1,Y_2,\ldots, Y_{50}$ be an iid sample of $Y \sim N(\mu, \sigma^2)$. Let $\bar{Y}=(1/50)\sum_i Y_i$ be the sample mean, $S^2=\{1/(50-1)\} \sum_i (Y_i-\bar{Y})^2$ be the sample variance, and let $T=(\bar{Y} - \mu) / (S/ \sqrt{50})$.
+
+<br>
+
+A. (2pts) What is $f_T(\cdot)$, the sampling distribution of $T$?
+
+$T$ is from a $t$ distribution of $49$ degrees of freedom.
+
+
+<br>
+
+B. (4pt) Describe $f_T(-0.65)$ in words. Calculate $f_T(-0.65)$. Is this quantity of practical use? Explain why or why not.
+
+```{r, echo=FALSE}
+# recall the built in d-, p-, q-, and r- functions for a variety of 
+# distributions
+x <- dt(-.65, 49)
+```
+
+$f_T(-0.65)$ is the value of the height of the PDF, or density function, at the value $x=-.65$. Its value is not really of practical use since $t$ is a continuous distribution and we should instead look to calculate the probability that its value lies in a given range, not the exact probability. The value of $f_T(-0.65)$ is `r x`.
+
+
+<br>
+
+C. (4pts) Let $F_T(\cdot)$ be the CDF of $T$. Describe $F_T(-0.65)$ in words. Calculate $F_T(-0.65)$. Is this quantity of practical use? Explain why or why not.
+
+```{r, echo=FALSE}
+# recall the built in d-, p-, q-, and r- functions for a variety of 
+# distributions
+y <- pt(-.65, 49)
+```
+
+$F_T(-0.65)$, the CDF of $T$, is the probability that the value of $T$ is less than or equal to $-.065$. Its value is $F_T(-0.65) =$ `r y`.
+This is of much more practical use, as it is a tangible quantity that represents the probability that $T$ falls in a range of values and for different values can be used for help in determining confidence intervals. 
+
+
+<br>
+
+
+# Question (8pts)
+
+Let $Y \sim f_Y(\cdot)= \textrm{Bin}(15, 0.7)$.
+
+<br>
+
+A. (4pt) Describe $f_Y(11)$ in words. Calculate $f_Y(11)$. Is this quantity of practical use? Explain why or why not.
+
+```{r, echo=FALSE}
+# recall the built in d-, p-, q-, and r- functions for a variety of 
+# distributions
+ z <- dbinom(11, 15, 0.7)
+
+
+```
+
+$f_Y(11)$ is the probability of observing $11$ successes in $15$ trials where the probability of success is $0.7$. $f_Y(11) =$ `r z`. Since this is a discrete distribution, it is of practical use as this probability corresponds to the tangible quantity of observing this many successes in $15$ trials.
+
+
+<br>
+
+B. (4pts) Let $F_Y(\cdot)$ be the CDF of $Y$. Describe $F_Y(11)$ in words. Calculate $F_Y(11)$. Is this quantity of practical use? Explain why or why not.
+
+```{r, echo=FALSE}
+# recall the built in d-, p-, q-, and r- functions for a variety of 
+# distributions
+a <- pbinom(11, 15, 0.7)
+
+```
+
+$F_Y(11)$ is the probability of observing $11$ or less successes in $15$ trials. $F_Y(11) =$ `r a`. This is also of practical use as we can use it to determine the probability of observing more or less success than a set number in a set number of trials.
+
+
+<br>
+
+
+# Question (10pts)
+
+Suppose the number of apneic episodes per hour for individuals being treated with an experimental drug for sleep apnea is $N(1,0.7)$.
+
+A. (2pts) What is the probability that a person chosen at random from this population will have more than 3 episodes per hour?
+
+```{r, echo=FALSE}
+# recall the built in d-, p-, q-, and r- functions for a variety of 
+# distributions
+?dnorm
+a <- 1-pnorm(3, 1, sqrt(0.7))
+```
+
+P(more than 3 episodes per hour) $=$ `r a`
+
+
+<br>
+
+B. (2pt) What is the probability that a person chosen at random will have between 1 and 3 (inclusive) episodes per hour?
+
+```{r, echo=FALSE}
+# recall the built in d-, p-, q-, and r- functions for a variety of 
+# distributions
+b <- pnorm(3, 1, sqrt(0.7)) - pnorm(1, 1, sqrt(0.7))
+```
+
+P(between 1 and 3 episodes per hour) $=$ `r b`
+
+
+<br>
+
+C. (2pt) What is the 11th percentile of apneic episodes per hour?
+
+```{r, echo=FALSE}
+# recall the built in d-, p-, q-, and r- functions for a variety of 
+# distributions
+c <- qnorm(.11, 1, sqrt(0.7))
+```
+
+11 percentile is `r c` apneic episodes per hour
+
+
+<br>
+
+D. (4pts) Based on your answer in (C), what is an issue with assuming that apneic episodes per hour is normally distributed? 
+
+The issue is that this value is negative, and it is impossible to have a negative number of apneic episodes per hour. This any values in these lower percentiles are unrealistic. Another distribution that does not include negative better values may be a better approximation.
+
+
+<br>
+
+
+# Question (16pts)
+
+Review the description of the SWISS data from previous homework. Create the *cleaned* SWISS data using the code below.
+
+```{r}
+SWISS <- read.csv(file="SWISSlong.csv", na.strings="")
+
+SWISSwide <- SWISS %>%
+  filter(Year %in% c(68, 78)) %>%  # select the years of interest
+  select(partID, group, Year, eGFR)  %>%  # choose a few columns
+  reshape(v.names="eGFR",    # variable that will be multiple columns
+      timevar="Year",        # variable indicating replications
+      idvar="partID",        # variable indicating unique participants
+      direction="wide") %>%  # which direction to be converted to
+  mutate(eGFRchg=eGFR.78-eGFR.68)  # calculate change in eGFR
+```
+
+<br>
+
+A. (6pts) Is the change in eGFR from year 1968 to year 1978 approximately normally distributed? Justify your answer with numerical summaries and plots (including a Q-Q plot).
+
+```{r, echo=FALSE}
+# see ?qqnorm and ?qqline for help with a Normal Q-Q plot 
+library(ggplot2)
+
+hist(SWISSwide$eGFRchg, main = 'Histogram of Change in eGFR from 1968 to 1978', col='Blue')
+
+qqnorm(SWISSwide$eGFRchg, main= 'Normal QQ Plot of change in eGFR from 1968 to 1978')
+qqline(SWISSwide$eGFRchg, col = "steelblue", lwd = 2)
+
+ggplot(data=SWISSwide, aes(x=SWISSwide$eGFRchg), na.rm=TRUE) + 
+  geom_density(alpha=0.6) 
+
+```
+
+Change in eGFR has a mean of `r mean(na.omit(SWISSwide$eGFRchg))` and a standard deviation of `r sd(na.omit(SWISSwide$eGFRchg))`. When looking at the above plots, we see that the data appear to be approximately normally distributed. 
+
+
+<br>
+
+B. (6pts) Regardless of you answer in (A) construct 95% CIs BY HAND (i.e., don't use ?t.test) for the population mean eGFR at year 1968, year 1978, and the change in eGFR.
+
+```{r, echo=FALSE}
+# you may check your answer against ?t.test, but I want to see the formula
+# (or you may write your own function!) coded out here.
+
+
+CI <- function(data){
+  data <- na.omit(data)
+  n <- length(data)
+  y_bar <- mean(data)
+  lower <- y_bar - qt(.975, n-1) *sd(data)/sqrt(n)
+  upper <- y_bar + qt(.975, n-1)*sd(data)/sqrt(n)
+  return(c(lower, upper))
+}
+
+CI_68 <- CI(SWISSwide$eGFR.68)
+CI_78 <- CI(SWISSwide$eGFR.78)
+CI_chg <- CI(SWISSwide$eGFRchg)
+
+df <- data.frame(CI_68, CI_78, CI_chg)
+row.names(df) <- c('lower', 'upper')
+df <- t(df)
+row.names(df) <- c('1968 CI for mean eGFR', '1978 CI for mean eGFR', 'CI for change in mean eGFR')
+df <- data.frame(df)
+df
+```
+
+The confidence intervals are printed above
+
+<br>
+
+
+C. (4pts) Interpret the CI for change in eGFR in a way that a clinician (non-statistician) would understand.
+
+
+We are 95% confidente that the true value for the change in mean eGFR is between -10.14 mL/min and -4.83 mL/min. This doesn't include zero, so we are confident there is a significant change in this time period
+
+<br>
+
+
+
+
+# Session Info
+
+```{r}
+sessionInfo()
+```
+
+<br>
+
+--- END OF REPORT ---
