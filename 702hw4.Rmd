@@ -1,0 +1,521 @@
+---
+title: "BIOSTAT 702 Homework 4 - Due 10/24/2022"
+author: "Will Powell"
+date: "10/17/2022"
+output:
+  bookdown::word_document2:
+    reference_docx: template_README_and_styles_3.docx
+    number_sections: no
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r setup, echo=FALSE, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, fig.width=5, fig.height=5,
+    dpi=300)
+
+
+# ######################################################################### #
+##                                                                         ##
+##  Author: tina.davenport@duke.edu                                        ##
+##  Program: BIOSTAT702_HW04_Lname_Fname.rmd                               ##
+##  Purpose: This program drafts the homework and responses                ##
+##                                                                         ##
+##  Input files:  [list data or source files]                              ##
+##                                                                         ##
+##  Output files: BIOSTAT702_HW04_Lname_Fname.docx - Word file of answers  ##
+##                to homework.                                             ##
+##                                                                         ##
+##  Change Log:                                                            ##
+##  10/17/2022 File started                                                ##
+##                                                                         ##
+# ######################################################################### #
+
+library(tidyverse)
+library(lubridate)
+library(knitr)
+
+options(knitr.kable.NA="")
+options(max.print = .Machine$integer.max)  # don't limit console printing
+
+rm(list=ls())
+```
+
+
+
+
+# (15pts)
+
+Graph the power curve and answer the question for the following situations. Show your work for computing power at the single point for full credit. (i.e., don't use a built-in R function for these!)
+
+A. (5pts) $H_0: \mu \ge 516$ vs. $H_A: \mu < 516$, $n=16$, $\sigma=32$, $\alpha=0.05$. What is the power at $\mu_A = 505$?
+
+```{r, echo=TRUE}
+rm(list=ls())  # clean up workspace
+#I potentially screwed this up
+
+mu0 <- 516
+muA <- 505
+nn <- 16
+sig <- 32
+aa <- 0.05
+
+powerMean <- function(mu0, muA, nn, sig, aa){
+  SE <- sig/sqrt(nn)
+  low <- mu0+qnorm(aa)*SE             # lower bound
+  Pow <- pnorm(low, mean=muA, sd=SE)
+  return(Pow)
+}
+powerMean(mu0, muA, nn, sig, aa)
+
+muAs <- seq(516-32, 516+32, length=1000)
+Pcurv <- 1:1000
+
+for(i in 1:1000){
+  Pcurv[i] <- powerMean(mu0, muAs[i], nn, sig, aa)
+}
+
+plot(muAs, Pcurv, type="l", lwd=2, cex=1.2, pch=16,
+    xlab="Alternative mu", ylab="Power")
+```
+
+The power at the point is .39. Above we can see a plot of the power curve.
+
+<br>
+
+
+
+B. (5pts) $H_0: \mu = 3$ vs. $H_A: \mu \ne 3$, $n=100$, $\sigma=1$, $\alpha=0.05$. What is the power at $\mu_A = 2.65$?
+
+```{r, echo=TRUE}
+rm(list=ls())  # clean up workspace
+
+mu0 <- 3
+muA <- 2.65
+nn <- 100
+sig <- 1
+aa <- 0.05
+
+powerMean <- function(mu0, muA, nn, sig, aa){
+  SE <- sig/sqrt(nn)
+  low <- mu0+qnorm(aa/2)*SE             # lower bound
+  upp <- mu0+qnorm(1-aa/2)*SE           # upper bound
+  Pow <- pnorm(low, mean=muA, sd=SE) +
+      (1-pnorm(upp, mean=muA, sd=SE))   # Power
+  return(Pow)
+}
+
+powerMean(mu0, muA, nn, sig, aa)
+
+muAs <- seq(2, 4, length=1000)
+Pcurv <- 1:1000
+
+for(i in 1:1000){
+  Pcurv[i] <- powerMean(mu0, muAs[i], nn, sig, aa)
+}
+
+plot(muAs, Pcurv, type="l", lwd=2, cex=1.2, pch=16,
+    xlab="Alternative mu", ylab="Power")
+```
+
+The power at the point is .938. Above we can see a plot of the power curve.
+
+<br>
+
+
+
+C. (5pts) $H_0: \pi = 0.02$ vs. $H_A: \pi \ne 0.02$, $n=500$, $\alpha=0.05$. What is the power at $\pi_A = 0.035$?
+
+```{r, echo=TRUE}
+pi0 <- .02
+piA <- .035
+nn <- 500
+aa <- .05
+za <- qnorm(1-aa/2)
+
+powerProportion <- function(pi0, piA, nn, aa, za){
+  low <- pi0 - za*sqrt(pi0*(1-pi0)/nn)
+  upp <- pi0 + za*sqrt(pi0*(1-pi0)/nn)
+  Pow <- pnorm(low, mean=piA, sd=sqrt(piA*(1-piA)/nn)) +
+      (1-pnorm(upp, mean=piA, sd=sqrt(piA*(1-piA)/nn)))
+  return(Pow)
+}
+powerProportion(pi0, piA, nn, aa, za)
+
+piAs <- seq(0, .05, length=1000)
+Pcurv <- 1:1000
+
+for(i in 1:1000){
+  Pcurv[i] <- powerProportion(pi0, piAs[i], nn, aa, za)
+}
+
+plot(piAs, Pcurv, type="l", lwd=2, cex=1.2, pch=16,
+    xlab="Alternative mu", ylab="Power")
+```
+The power at the point is .63. Above we can see a plot of the power curve.
+
+
+<br>
+
+
+
+
+
+# (5pts)
+
+Determine the sample size needed to have 90% power to detect the following alternatives corresponding to the exercises above. Show your work to receive full credit. (i.e., don't use a built in R function!)
+
+A. (1pt) $\mu_A=510$
+
+```{r, echo=TRUE}
+rm(list=ls())  # clean up workspace
+
+mu0 <- 516
+muA <- 510
+sig <- 32
+aa <- 0.05
+beta <- .1
+
+sampleSize <- function(mu0, muA, beta, aa, sig, sides){
+  zpow <- qnorm(1-beta)
+  za <- qnorm(1-aa/sides)
+  nneed <- ( ((za + zpow)*sig) / (muA-mu0) )^2
+  return(nneed)
+}
+
+sampleSize(mu0, muA, beta, aa, sig, 1)
+```
+
+We would need a sample size of 244 to obtain this level of power.
+
+<br>
+
+
+
+B. (1pt) $\mu_A=3.5$
+
+```{r, echo=TRUE}
+mu0 <- 3
+muA <- 3.5
+sig <- 1
+aa <- 0.05
+beta <- 0.1
+
+sampleSize(mu0, muA, beta, aa, sig, 2)
+```
+
+We would need a sample size of 43 to obtain this level of power.
+
+<br>
+
+
+
+C. (3pts) $\pi_A=0.04$
+
+```{r, echo=TRUE}
+#potentially screwed this up
+pi0 <- .02
+piA <- .04
+aa <- .05
+za <- qnorm(1-aa/2)
+beta <- 0.1
+sides <- 2
+
+sampleSizeProp <- function(pi0, piA, beta, aa, sig, sides){
+  zpow <- qnorm(1-beta)
+  za <- qnorm(1-aa/sides)
+  nneed <- pi0*(1-pi0)*( (za + zpow*(sqrt(piA*(1-piA) / (pi0*(1-pi0))))) / (piA-pi0) )^2
+  return(nneed)
+}
+sampleSizeProp(pi0, piA, beta, aa, sig, sides)
+```
+
+We would need a sample size of 691 to obtain this level of power.
+
+<br>
+
+
+
+
+
+# (30pts) FINAL PROJECT
+
+Review the final project rmd (the SAP) and the journal article describing the parent trial (both saved under "Resources" on Sakai). You will answer questions here as part of your homework. Once you receive your returned assignment with feedback, transfer the answers - incorporating any corrections necessary - to the appropriate section of the Final Project rmd.
+
+From Homework 3, ensure that there were 500 participants, of which, 300 were included for being White, male, and on RTV+DRV or RAL. You will now perform data cleaning/exploratory analyses on these 300 to determine if additional exclusions are needed.
+
+```{r DataClean, echo=FALSE, results=FALSE}
+# read in data and apply exclusions from Homewotk 3
+ACTG <- read.csv("ACTG_FinalProjectData.csv")
+ACTGbaseline <- ACTG %>%
+  filter(week %in% c(0)) 
+
+ACTGclean <- ACTGbaseline %>%
+  filter(race %in% c('White')) %>%
+  filter(sex %in% c('M')) %>%
+  filter(Arm %in% c('B','C'))
+
+ACTGclean$age[ACTGclean$age == 0] = NA
+ACTGclean$CD4[ACTGclean$CD4 < 0] = NA
+ACTGclean$hivRNA[ACTGclean$hivRNA < 0] = NA
+  
+nrow(ACTGclean)
+```
+
+<br>
+
+
+A. (4pts) **Section 5, Exploratory Analyses** compute descriptive statistics of the following continuous variables: age, CD4 at 24 weeks, HIV RNA at 24 weeks. Describe all oddities you observe in these variables and what steps you performed to correct them. 
+
+```{r MoreCleaning, echo=FALSE}
+# you may perform the descriptive statistics in this code chunk and
+# Produce plots
+# In this chunk, perform the summaries needed to fill in the Table 1 shell
+# below.
+
+#Functions from Dr. Tina Davenport Lecture notes to obtain summaries
+
+MeanSD <- function(xx, digs){  # summarize the mean and SD of a continuous
+                               # variable "xx". Round results to "digs" 
+    rslt <- round(c(mean(xx, na.rm=TRUE), sd(xx, na.rm=TRUE)), digs)
+    paste0(rslt[1], " (", rslt[2], ")")  
+}
+
+MedIQR <- function(xx, digs){  # summarize the median and IQR of a continuous
+                               # variable "xx". Round results to "digs" 
+    rslt <- round(c(median(xx, na.rm=TRUE), 
+                    quantile(xx, probs=c(1,3)/4, na.rm=TRUE)), digs)
+    paste0(rslt[1], " [", rslt[2], ", ", rslt[3], "]")  
+}
+
+FreqPct <- function(xx, digs){  # summarize the count and % of a categorical
+                                # variable "xx". Round the % to "digs".
+    cts <- table(xx, exclude=NULL)  # create counts, including missing vals
+    pct <- round(prop.table(cts) * 100, digs)    # create percentages
+    rslt <- cbind(cts, pct)
+    paste0(rslt[,1], " (", rslt[,2], ")")  
+  
+}
+
+
+# try them out!
+Age <- rnorm(50, mean=65, sd=10)  # generate a fake vector of cont data
+Arm <- sample(LETTERS[1:3], 50, replace=TRUE)  # generate fake categ data
+Sex <- sample(LETTERS[1:2], 50, replace=TRUE)
+
+#MeanSD(Age, digs=1)
+#MedIQR(Age, digs=1)
+#FreqPct(Sex, digs=1)
+
+
+AgeFin <- c(Overall=MeanSD(Age, digs=1),  tapply(Age, Arm, MeanSD, digs=1))
+SexFin <- c( list(OVerall=FreqPct(Sex, digs=1)),  
+                      tapply(Sex, Arm, FreqPct, digs=1) ) %>% data.frame()
+
+#kable( rbind(Age=AgeFin, Sex=SexFin) )  # put them in a table
+
+ACTGclean2 <- ACTG %>%
+  filter(ntisid %in% ACTGclean$ntisid) %>%
+  filter(week %in% c(24))
+
+a <- MeanSD(ACTGclean2$CD4)
+b <- MedIQR(ACTGclean2$CD4)
+
+
+c <- MeanSD(ACTGclean2$hivRNA)
+d <- MedIQR(ACTGclean2$hivRNA)
+
+e <- MeanSD(ACTGclean2$age)
+f <- MedIQR(ACTGclean2$age)
+
+
+```
+ 
+We obtain from the above code that for CD4 at 24 weeks, the Mean and SD are `r a`, and the IQR is `r b`. For hivRNA at 24 weeks, the Mean and SD are `r c` and the IQR is `r d`. For age, taken at 24 weeks, the Mean and SD are `r e`, and the IQR s `r f`
+
+<br>
+
+
+
+B. (3pts) **Data Cleaning**: Exclude all participants who are missing CD4 at 24 weeks, HIV RNA at 24 weeks, treatment indicator, or age. That is, anyone missing data on the primary outcomes and exposures should be excluded. (For this project, even if they are only missing one of the primary outcomes, they will be excluded from all analyses.) Of the 300 participants eligible, how many were missing CD4 at 24 weeks? Of those remaining, how many were missing RNA at 24 weeks? Of those, how many were missing treatment assignment? Age? How many remain in the analytic dataset?
+
+```{r, echo=TRUE}
+
+ACTG$age[ACTG$age == 0] = NA
+ACTG$CD4[ACTG$CD4 < 0] = NA
+ACTG$hivRNA[ACTG$hivRNA < 0] = NA
+
+ACTGclean2 <- ACTG %>%
+  filter(ntisid %in% ACTGclean$ntisid) %>%
+  filter(week %in% c(24))
+
+nrow(ACTGclean2)
+
+ACTGclean3 <- ACTGclean2 %>%
+  filter(!is.na(CD4))
+
+nrow(ACTGclean3)
+
+ACTGclean4 <- ACTGclean3 %>%
+  filter(!is.na(hivRNA))
+
+nrow(ACTGclean4)
+
+ACTGclean5 <- ACTGclean4 %>%
+  filter(!is.na(age))
+
+nrow(ACTGclean5)
+
+
+ACTGclean6 <- ACTG %>%
+  filter(race %in% c('White')) %>%
+  filter(sex %in% c('M')) %>%
+  filter(Arm %in% c('B','C')) %>%
+  filter(week %in% c(24)) %>%
+  filter(!is.na(age)) %>%
+  filter(!is.na(hivRNA)) %>%
+  filter(!is.na(CD4))
+
+nrow(ACTGclean6)
+```
+
+
+```{r}
+ACTG <- read.csv("ACTG_FinalProjectData.csv")
+ACTGbaseline <- ACTG %>%
+  filter(week %in% c(0)) 
+
+ACTG$age[ACTG$age == 0] = NA
+ACTG$CD4[ACTG$CD4 < 0] = NA
+ACTG$hivRNA[ACTG$hivRNA < 0] = NA
+
+ACTGclean6 <- ACTG %>%
+  filter(race %in% c('White')) %>%
+  filter(sex %in% c('M')) %>%
+  filter(Arm %in% c('B','C')) %>%
+  filter(week %in% c(24)) %>%
+  filter(!is.na(age)) %>%
+  filter(!is.na(hivRNA)) %>%
+  filter(!is.na(CD4))
+
+nrow(ACTGclean6)
+```
+
+We can see that from the eligible participants, only 288 have measurement in week 24. Of these, 4 are missing CD4. Of the remaining, 2 are missing for hivRNA. Of the remaining, 1 is missing age. With no one missing treatment arm of the remaining patients, we are left with 281 patients.
+
+281 complete
+<br>
+
+
+
+C. (4pts) **Data Cleaning**: Create the binary outcome for viral load as described in Section 3.1 of the SAP. How many participants had undetectable viral load at 24 weeks? How many did not?
+
+```{r, echo=TRUE}
+# create the outcome and get the counts in this chunk 
+ACTGclean6$UDVLw24 <- ifelse(ACTGclean6$hivRNA>40, 0, 1)
+sum(ACTGclean6$UDVLw24)
+```
+
+There are 234 patients that had undetectable viral load, meaning 234 had a measurement of 40 or less. 47 were detectable and had measurements greater than 40, and thus did not have undetectable viral load. 
+
+<br>
+
+
+
+D. (4pts) **Graphical Displays**: give sufficient univariable plots of each of the three continuous variables. Describe what you see in the plots and if they align with what you anticipated.
+
+```{r UnivariatePlots, echo=FALSE, fig.width=3, fig.height=3}
+# use this chunk to graph the variables
+hist(ACTGclean5$age, main = 'Histogram of age', xlab = 'age', col='blue')
+boxplot(ACTGclean5$age, main = 'Boxplot of age', xlab = 'age', col='blue')
+d <- density(ACTGclean5$age)
+plot(d, main = 'Density Plot of age', xlab = 'age')
+
+hist(ACTGclean5$hivRNA, main = 'Histogram of hivRNA', xlab = 'hivRNA', col='blue')
+boxplot(ACTGclean5$hivRNA, main = 'Boxplot of hivRNA', xlab = 'hivRNA', col='blue')
+d <- density(ACTGclean5$hivRNA)
+plot(d, main = 'Density Plot of hivRNA', xlab = 'hivRNA')
+
+hist(ACTGclean5$CD4, main = 'Histogram of CD4', xlab = 'CD4', col='blue')
+boxplot(ACTGclean5$CD4, main = 'Boxplot of CD4', xlab = 'CD4', col='blue')
+d <- density(ACTGclean5$CD4)
+plot(d, main = 'Density Plot of CD4', xlab = 'CD4')
+```
+
+
+Age and CD4 appear to be roughly normally distributed. hivRNA has a very skewed distribution due to the majority of patients having an undetectable viral load.
+<br>
+
+
+
+E. (3pts) **Graphical Displays**: Draw a scatter plot of age on the x-axis by CD4 at 24 weeks on the y-axis. Add a LOESS line (Google it or see ?loess in base R or ?geom_smooth in ggplot.) Describe what you anticipated seeing and what you observed in the plot.
+
+```{r, echo=FALSE}
+ggplot(ACTGclean6, aes(age, CD4)) + geom_point() + geom_smooth()
+#get loews 
+```
+
+Would expect to see a relationship of some kind, but don't see noticeable relationship here. Plot appears to almost like a residual plot.
+
+<br>
+
+
+
+F. (4pts) Create box plots (and/or violin plots) of age stratified by undetectable viral load, and CD4 at 24 weeks stratified by undetectable viral load. Again describe what you anticipate seeing in the plots and what you observed.
+
+```{r, echo=FALSE, fig.width=3, fig.height=3}
+# create plots in this chunk
+library(ggplot2)
+boxplot(ACTGclean6$age[ACTGclean6$UDVLw24 == 1])
+boxplot(ACTGclean6$age[ACTGclean6$UDVLw24 == 0])
+
+ACTGclean6$UDVLw24 <- as.factor(ACTGclean6$UDVLw24)
+p <- ggplot(ACTGclean6, aes(x=UDVLw24, y=age)) +
+    geom_violin()
+p
+
+boxplot(ACTGclean6$CD4[ACTGclean6$UDVLw24 == 1])
+boxplot(ACTGclean6$CD4[ACTGclean6$UDVLw24 == 0])
+q <- ggplot(ACTGclean6, aes(x=UDVLw24, y=CD4)) +
+    geom_violin()
+q
+
+```
+
+We would expect the measurements to be roughly similar so that the difference in the groups is coming from the different treatments, and that is roughly what we are seeing here. There are a few more old people and people with higher CD4 who have undetectable viral load. We would expect this as those who are doing better fighting the the disease to have undetectable viral load and higher CD4 counts.
+
+<br>
+
+
+
+G. (8pts) What proportion of those treated with RAL had undetectable viral load at 24 weeks? Descriptively (i.e., no need to do any statistical test), how does this proportion compare to the overall proportion of those with undetectable viral load? Similarly, what proportion of those treated with RTV+DRV had undetectable viral load at 24 weeks and how does it compare to the overall proportion? Does there appear to be an association between treatment arm and undetectable viral load? Justify your answer. (But, don't do any tests - just use critical thinking!)
+
+```{r, echo=TRUE}
+# use this chunk to get the proportions
+
+ral <- ACTGclean6[ACTGclean6$Arm == 'B', ]
+rtv_drv <- ACTGclean6[ACTGclean6$Arm == 'C', ]
+
+
+nrow(ral[ral$UDVLw24 == 1,])/nrow(ral)
+nrow(rtv_drv[rtv_drv$UDVLw24 == 1,])/nrow(rtv_drv)
+nrow(ACTGclean6[ACTGclean6$UDVLw24 == 1,])/nrow(ACTGclean6)
+nrow(rtv_drv)
+```
+
+There are `r nrow(ral)` patients treated with RAL and `r nrow(rtv_drv)` treated with RTV+DRV. The proportion of RAL patients with undetectable viral load is `r nrow(ral[ral$UDVLw24 == 1,])/nrow(ral)`. the Proportion for RTV+DRV is `r nrow(rtv_drv[rtv_drv$UDVLw24 == 1,])/nrow(rtv_drv)`. The overall proportion is `r nrow(ACTGclean6[ACTGclean6$UDVLw24 == 1,])/nrow(ACTGclean6)`. Therefore it appears there is an association with those treated with RAL having a higher proportion of undetectable viral load than those with RTV+DRV.
+
+<br>
+
+
+
+# Session Info
+
+```{r}
+sessionInfo()
+```
+
+<br>
+
+--- END OF REPORT ---
