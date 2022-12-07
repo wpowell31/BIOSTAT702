@@ -1,0 +1,743 @@
+---
+title: "Biostat 702 Final Project"
+author: "Will Powell"
+date: ' '
+output:
+  bookdown::word_document2:
+    reference_docx: template_README_and_styles_3.docx
+    number_sections: no
+  html_document:
+    df_print: paged
+  word_document: default
+---
+
+```{r setup, echo=FALSE, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, fig.width=5, fig.height=5)
+
+
+# ######################################################################### #
+##                                                                         ##
+##  Author: Will Powell                            ##
+##  Program: BIOSTAT702_FP_Lname_Fname.rmd                                 ##
+##  Purpose: This program performs the analyses and generates the report   ##
+##  for the BIOS 702 final project.                                        ##
+##                                                                         ##
+##  Input files:  [list data or source files]                              ##
+##                                                                         ##
+##  Output files: BIOSTAT702_FP_Lname_Fname.docx - Word file of the SAP    ##
+##                and report for these analyses                            ##
+##                                                                         ##
+##  Change Log:                                                            ##
+##  07/07/2022 File started                                                ##
+##                                                                         ##
+# ######################################################################### #
+
+# setwd()
+library(tidyverse)
+library(lubridate)
+library(knitr)
+
+options(knitr.kable.NA="")
+options(max.print = .Machine$integer.max)  # don't limit console printing
+
+rm(list=ls())
+```
+
+------------------------------------------------------------------------
+
+**Title**: Secondary Comparison of Two Antiretroviral Regimens on HIV outcomes among a Subset of Volunteers in the ACTG A5257 Study
+
+**Investigator(s)**: Clemontina A Davenport, PhD
+
+**Biostatistician(s)**: Will Powell
+
+**Supervising Biostatistician**: N/A
+
+**Original Creation Date**: 09/18/2022
+
+**Project Folder Location**: [Give the directory where all project files are stored]
+
+**Project Goal(s)**: Written Report (will be used to inform a manuscript)
+
+**Submission Deadline(s)**: December 2, 2022, 7pm
+
+------------------------------------------------------------------------
+
+**Activity Log**
+
+09/18/2022 File started
+
+------------------------------------------------------------------------
+
+# Study Overview
+
+## Background
+
+The 2014 HIV treatment guidelines for treatment naive individuals with HIV-1 was
+
+1.  a combination of 2 nucleoside reverse transcriptase inhibitors (NRTI) plus a nonnucleoside reverse transcriptase inhibitor (NNRTI),
+2.  a ritonavir-boosted protease inhibitor (PI), or
+3.  an integrase inhibitor.
+
+<br>
+
+The primary NNRTI was efavirenz, however efavirenz based therapies may not have been suitable for certain individuals, such as those planning to become pregnant or those with preexisting resistance to NNRTIs. Thus the parent study from which the data came$^1$ compared alternatives to efavirenz in terms of efficacy (viral load reduction) and tolerability (fewer side effects).
+
+The treatments under study were emtricitabine plus tenofovir disoproxil fumarate (TDF) (Truvada) combined with
+
+1.  ritonavir-boosted atazanavir (Norvir+Reyataz),
+2.  raltegravir (Isentress)
+3.  ritonavir-boosted darunavir (Norvir+Prezista)
+
+<br>
+
+Emtricitabine and TDF are NRTIs; ritonavir, atazanavir, and darunavir are protease inhibitors; raltegravir is an integrase strand transfer inhibitor (INSTI).
+
+(Note that current practice is to prescribe a second generation INSTI such as bictegravir or dolutegravir as the first therapy for HIV.)
+
+## Current Study {#Curr}
+
+In this current study, we simplify the research question by comparing ritonavir-boosted darunavir to raltegravir in terms of 24-week efficacy only among White males in the parent study. We will also look at the age-adjusted comparisons.
+
+## Study Aims
+
+### Aim 1
+
+Aim 1a: Determine the association between randomized treatment and 24-week viral load status. Specifically, determine if ritonavir-boosted darunavir has different odds of undetectable 24-week viral load compared to raltegravir.
+
+
+### Aim 2
+
+Aim 2a: Determine the association between randomized treatment and 24-week CD4 count. Specifically, determine if mean 24-week CD4 count differs between those randomized to ritonavir-boosted darunavir compared to raltegravir.
+
+
+## Study Hypotheses
+
+### Hypothesis 1
+
+Hypothesis 1a.)
+<br>
+Null Hypothesis: Ritonavir-boosted darunavir has the same odds of undetectable 24-week viral load compared to raltegravir.
+<br>
+Alternate Hypothesis: Ritonavir-boosted darunavir has different odds undetectable 24-week viral load compared to raltegravir.
+
+
+
+
+### Hypothesis 2
+
+Hypothesis 2a.)
+<br>
+Null Hypothesis: Ritonavir-boosted darunavir has the same mean 24-week CD4 count compared to raltegravir.
+<br>
+Alternate Hypothesis: Ritonavir-boosted darunavir has a different mean 24-week CD4 count compared to raltegravir.
+
+
+
+
+# Study Population
+
+The population is people who have not received these treatments before who have HIV-1 RNA levels above the given threshold of 1000 copies/ml and enrolled in the trial. In this study, we will only include White Males who received ritonavir-boosted darunavir and raltegravir.
+
+## Inclusion/Exclusion Criteria
+
+Our study will only include those who received the two treatments, raltegravir and ritonavir-boosted darunavir, and are white males. We will only include patients who have correct corresponding data at baseline and at week 24.
+
+
+## Data Acquisition
+
+**Study design**: The parent study is a randomized prospective experimental clinical trial. The current study is a retrospective observational study.
+
+**Data source/how the data were collected**: [Describe how data were collected in the parent study]
+
+**Contact information for team member responsible for data acquisition**: Tina Davenport received permission from the parent study PIs to use a subset of the data for didactic purposes. Contact [tina.davenport\@duke.edu](mailto:tina.davenport@duke.edu){.email} with questions.
+
+**Date or version (if downloaded, provide date)**: ACTG_FinalProjectData.csv has a modified date of 07/08/2022. This is the raw data file and should not be modified.
+
+**Data transfer method and date**: Tina Davenport transferred the data through Sakai on 09/18/2022.
+
+**Where dataset is stored**: [Give the directory where you saved the raw files]
+
+Notes: *Include any additional details that give information about how this data set was acquired*
+
+# Outcomes, Exposures, and Variables of Interest
+
+## Primary Outcomes
+
++-------------+-------------------------------------------------+------------------------------------------------------------------------------------+
+| Outcome     | Description                                     | Specifications                                                                     |
++=============+=================================================+====================================================================================+
+| CD4w24      | CD4+ cell count (cells/mm$^3$)                  | A continuous value $\ge$ 0                                                         |
+|             |                                                 |                                                                                    |
+|             | Measured closest to the visit window at week 24 |                                                                                    |
++-------------+-------------------------------------------------+------------------------------------------------------------------------------------+
+| UDVLw24     | Undetectable HIV-1 RNA viral load at 24 weeks.  | Derived from the variable "hivRNA" measured at 24 weeks (see below) and defined as |
+|             |                                                 |                                                                                    |
+|             |                                                 | 0= No (hivRNA $>$ 40 copies/ml)                                                    |
+|             |                                                 |                                                                                    |
+|             |                                                 | 1= Yes (0 $\le$ hivRNA $\le$ 40 copies/ml)                                         |
++-------------+-------------------------------------------------+------------------------------------------------------------------------------------+
+
+## Primary Exposures
+
++-------------+--------------------------------------------------+-------------------------------------------------------------------------+
+| Exposure    | Description                                      | Specifications                                                          |
++=============+==================================================+=========================================================================+
+| Arm         | Indicator of randomized HIV treatment assignment | Binary variable where                                                   |
+|             |                                                  |                                                                         |
+|             |                                                  | B= raltegravir                                                          |
+|             |                                                  |                                                                         |
+|             |                                                  | C= ritonavir-boosted darunavir                                          |
+|             |                                                  |                                                                         |
+|             |                                                  | (Note that those with A= ritonavir-boosted atazanavir will be excluded) |
++-------------+--------------------------------------------------+-------------------------------------------------------------------------+
+| age         | Age at study entry (years)                       | A continuous variable                                                   |
++-------------+--------------------------------------------------+-------------------------------------------------------------------------+
+
+## Other Variables of Interest
+
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| Outcome    | Description                            | Specifications                                                                                                                                 |
++============+========================================+================================================================================================================================================+
+| ntisid     | NTIS Identification number             | A nominal variable                                                                                                                             |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| week       | Study week                             | Primarily interested in week 0 and week 24                                                                                                     |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| sex        | Sex                                    | Defined as M= male                                                                                                                             |
+|            |                                        |                                                                                                                                                |
+|            |                                        | (Note that those with F= Female will be excluded)                                                                                              |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| race       | Race                                   | Defined as White                                                                                                                               |
+|            |                                        |                                                                                                                                                |
+|            |                                        | (Note that other races will be excluded)                                                                                                       |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| educ       | Highest completed level of education   | An ordinal variable with values                                                                                                                |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 1= 12th grade or less                                                                                                                          |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 2= High school graduate or GED                                                                                                                 |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 3= Some college/AA degree/Technical school                                                                                                     |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 4= College graduate (BA or BS)                                                                                                                 |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 5= Graduate degree masters/doctorate                                                                                                           |
+|            |                                        |                                                                                                                                                |
+|            |                                        | This can be dichotomized into High school or less (1, 2) vs. Some college or more (3, 4, 5)                                                    |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| income     | Average yearly income from all sources | An ordinal variable with values                                                                                                                |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 1= Less than \$5,000                                                                                                                           |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 2= \$5,000 - \$19,999                                                                                                                          |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 3= \$20,000 - \$49,999                                                                                                                         |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 4= \$50,000 - \$99,999                                                                                                                         |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 5=\$100,000 - \$149,999                                                                                                                        |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 6=More than \$150,000                                                                                                                          |
+|            |                                        |                                                                                                                                                |
+|            |                                        | -888= Chose not to answer                                                                                                                      |
+|            |                                        |                                                                                                                                                |
+|            |                                        | -999= Don't know                                                                                                                               |
+|            |                                        |                                                                                                                                                |
+|            |                                        | This can be categorized into Less than \$20,000 (1,2), \$20,000 - \$99,999 (3,4), \$100,000 or more (4,5), and Don't know/refused (-888, -999) |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| aids_dx    | Prior AIDS diagnosis                   | A binary variable with values                                                                                                                  |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 0= No                                                                                                                                          |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 1= Yes                                                                                                                                         |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| ivdrug     | History of injection drug use          | A categorical variable with values                                                                                                             |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 1= Never                                                                                                                                       |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 2= Previously                                                                                                                                  |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 3= Currently                                                                                                                                   |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| drinker    | Alcohol drinking category              | A categorical variable with values                                                                                                             |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 1= Abstainer                                                                                                                                   |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 2= Moderate drinker                                                                                                                            |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 3= Heavy drinker                                                                                                                               |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 4= Binge drinker                                                                                                                               |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| eversmoker | History of ever smoking                | A binary variable with values                                                                                                                  |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 0= No                                                                                                                                          |
+|            |                                        |                                                                                                                                                |
+|            |                                        | 1= Yes                                                                                                                                         |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| BMI        | Body mass index (kg/m$^2$)             | A continuous value $\ge$ 0                                                                                                                     |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| hivRNA     | HIV-1 RNA (copies/ml)                  | A continuous value $\ge$ 0                                                                                                                     |
+|            |                                        |                                                                                                                                                |
+|            |                                        | Will be log10 transformed in summaries and analyses                                                                                            |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| CD4        | CD4+ cell count (cells/mm$^3$)         | A continuous value $\ge$ 0                                                                                                                     |
+|            |                                        |                                                                                                                                                |
+|            | Measured closest to the visit window   |                                                                                                                                                |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| CD8        | CD8+ cell count (cells/mm$^3$)         | A continuous value $\ge$ 0                                                                                                                     |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| SBP        | Systolic blood pressure (mmHg)         | A continuous value $\ge$ 0                                                                                                                     |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| DBP        | Diostolic blood pressure (mmHg)        | A continuous value $\ge$ 0                                                                                                                     |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| LDL        | Fasting calc LDL-C (mg/dL)             | A continuous value $\ge$ 0                                                                                                                     |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+| FPG        | Fasting plasma glucose (mg/dl)         | A continuous value $\ge$ 0                                                                                                                     |
++------------+----------------------------------------+------------------------------------------------------------------------------------------------------------------------------------------------+
+
+# Statistical Analysis Plan
+
+In exploratory analyses, we will investigate the distributions of continuous variables via histograms, density plots, box plots, and violin plots, and categorical variables via bar plots and crosstabs as needed. We will explore the relationships between the outcomes and exposures via crosstabs, histograms, box plots, and scatter plots (with LOESS) as appropriate. We will check assumptions, identify outliers, and explore missingness as needed.
+
+Baseline characteristics will be presented across all subjects and stratified by study arm. Categorical variables will be presented as counts (percent) and continuous variables will be presented as location (spread) as appropriate. A table shell is given below.
+
+*Every analysis step should refer back to an aim/hypothesis/objective.*
+
+## Analysis Plan for Aim 1
+
+### Aim 1A
+
+Our aim is to determine the association between randomized treatment and 24 week viral load. Specificially, our aim is to determing if there is a statistically significant odds ratio between ritonavir-boosted darunavir compared to raltegravir. Our two populations are those randomized to ritonavir-boosted darunavir and those assigned to raltegravir. We are assuming that the assignment to the two groups is fixex and known.
+
+We will construct a 2x2 table of the two treatment groups and their outcomes of week 24 undetectable viral load. We will estimate the odds ratio between the two groups, and we will construct and interpret a 95% confidence interval for the odds ratio between the two treatment groups.
+
+Our estimate of the odds ratio is :
+
+$$\hat{OR} = \frac{n_{11}n_{22}}{n_{12}n_{n1}} $$
+
+Where $n_{ij}$ is the value of the 2x2 table for the ith row ad jth column. Using our point estimate, we will construct a 95% Confidence Interval. If 1 is not contained in this interval, we have significant evidence that there is a difference in the odds between the two treatment groups.
+
+
+## Analysis Plan for Aim 2
+
+### Aim 2A
+
+Our aim is to determine if there is a statistically significant difference in the means of the two populations randomized to treament with ritonavir-boosted darunavir and those assigned to raltegravir. Our two populations are those randomized to ritonavir-boosted darunavir and those assigned to raltegravir. We are assuming that since these populations are randomnly assigned, there should not be a significant confounder present between the two populations. We are assuming that the assignment to groups is fixed, known, and that there is a random normally distributed sub-population of CD4 values for each treatment group. We are assuming that the variances of the CD4 values are equal, and that the values of the CD4 values are independent. 
+
+We test our hypothesis, $H_0: \mu_1 = \mu_2$ vs. $H_1: \mu_1 \neq \mu_2$, where $\mu_1$ is the mean CD4 for the control group, and $\mu_2$ is the mean CD4 for the treatment group. 
+
+For our analytical approach, we will use a two sample t-test for difference in means, with assumed equal population variances.
+
+The test statistic is
+
+$$T = \frac{(\bar{Y}_1 - \bar{Y}_2) - \delta_0}{\sqrt{\frac{S_p^2}{n_1} + \frac{S_p^2}{n_2}}} \sim t_{n_1 +n_2 -2} \textrm{ under } H_0.$$
+
+If we have evidence to reject the Null Hypothesis, we will draw inference that there is significant evidence that there is a difference in mean CD4 values for the two treatment groups.
+
+We will check the normality assumptions using histograms, and if these assumptions are violated we will consider using another test with a different distribution.
+
+
+
+*All of the above sections can and should be finalized before analyzing data.*
+
+# Statistical Analysis Results
+
+**Exploratory Analyses and CONSORT Numbers**
+
+```{r DataClean, echo=FALSE, results=FALSE}
+# In this chunk, read in the data
+
+
+# Apply the inclusion/exclusion criteria to the data
+# Make sure you clean the variables related to inclusion/exclusion as needed
+# first. This means CHECKING the variables and asking the PI if there are
+# values in the data that you did not expect.
+
+
+# this is only the first pass of data cleaning.
+ACTG <- read.csv("ACTG_FinalProjectData.csv")
+ACTGbaseline <- ACTG %>%
+  filter(week %in% c(0)) 
+
+num_baseline_total <- nrow(ACTGbaseline)
+
+ACTGrace_exclusions <- ACTGbaseline %>%
+  filter(race %in% c('White')) 
+
+ex_race <- 500-nrow(ACTGrace_exclusions)
+
+ACTGsex_exclusions <- ACTGbaseline %>%
+  filter(sex %in% c('M')) 
+
+ex_sex <- 500-nrow(ACTGsex_exclusions)
+
+ACTGarm_exclusions <- ACTGbaseline %>%
+  filter(Arm %in% c('B','C'))
+
+ex_arm <- 500-nrow(ACTGarm_exclusions)
+
+ACTGbaseline_clean <- ACTGbaseline %>%
+  filter(race %in% c('White')) %>%
+  filter(sex %in% c('M')) %>%
+  filter(Arm %in% c('B','C'))
+  
+num_baseline_clean <- nrow(ACTGbaseline_clean)
+```
+
+
+
+The ACTG data contained `r num_baseline_total` patients at baseline.  We excluded `r ex_race` patients because of race conditions, `r ex_sex` because of sex conditions, and `r ex_arm` because of the treatment exclusions. After the first pass of data cleaning including white males that received ritonavir-boosted darunavir or ritonavir, we have `r num_baseline_clean` patients eligible for further analysis.
+
+From this draft analytic dataset, we performed additional data cleaning and QCing.
+
+```{r MoreCleaning, results=FALSE}
+
+# In this chunk, perform additional data cleaning to make sure ALL the
+# variables in the data set conform to how they are described in the SAP.
+# For example, CD4 must be >=0.
+# viral load at week 24 must be dichotomized. But before dichotomizing, you
+# must clean the viral load variable as needed!
+# Make sure age makes sense
+# and so on
+# Create/extract/clean all variables defined in the SAP.
+
+ACTG$age[ACTG$age == 0] = NA
+ACTG$CD4[ACTG$CD4 < 0] = NA
+ACTG$hivRNA[ACTG$hivRNA < 0] = NA
+
+ACTGwk24raw <- ACTG %>%
+  filter(ntisid %in% ACTGbaseline_clean$ntisid) %>%
+  filter(week %in% c(24))
+
+wk24raw <- nrow(ACTGwk24raw)
+
+ACTGclean3 <- ACTGwk24raw %>%
+  filter(!is.na(CD4))
+
+missing_CD4 <- wk24raw - nrow(ACTGclean3)
+missing_CD4
+
+ACTGclean4 <- ACTGwk24raw %>%
+  filter(!is.na(hivRNA))
+
+missing_hivRNA <- wk24raw - nrow(ACTGclean4)
+missing_hivRNA
+
+ACTGclean5 <- ACTGwk24raw %>%
+  filter(!is.na(age))
+
+missing_age <- wk24raw - nrow(ACTGclean5)
+missing_age
+
+
+```
+
+
+One person had age=0, one person had RNA=-1, and one person had CD4=-1. These values don't make sense and were set to NA.
+
+
+
+
+```{r AnalyticData}
+# Create you final analytic data set here by removing anyone who has missing
+# data on the primary outcomes or exposures. (But keep those who have missing
+# data on the other variables in the SAP.)
+ACTGwk24clean <- ACTG %>%
+  filter(race %in% c('White')) %>%
+  filter(sex %in% c('M')) %>%
+  filter(Arm %in% c('B','C')) %>%
+  filter(week %in% c(24)) %>%
+  filter(!is.na(age)) %>%
+  filter(!is.na(hivRNA)) %>%
+  filter(!is.na(CD4))
+
+
+
+ACTGwk24clean$UDVLw24 <- ifelse(ACTGwk24clean$hivRNA>40, 0, 1)
+```
+
+
+
+From the 300 eligible patients at baseline, there are only `r wk24raw` at week 24 follow-up. Of these, `r missing_CD4` were missing CD4 at week 24, `r missing_hivRNA` missing for hivRNA at week 24, `r missing_hivRNA`, and `r missing_age` is missing age at week 24. With no one missing treatment arm of the remaining patients, we are left with `r nrow(ACTGwk24clean)` patients.
+
+
+```{r cleanup1}
+# optional: I like to clean up my workspace by removing objects I don't need
+# anymore. you can use the ?rm function to do so and list out the objects as
+# rm(aa, bb, cc)
+```
+
+**Graphical Displays**
+
+```{r ExplFigs, fig.width=12, fig.height=8}
+
+# In this chunk, visualize any variable you use in the analyses (including
+# those described in Table 1) using the plots described in the SAP.
+hist(ACTGwk24clean$age, main = 'Histogram of age', xlab = 'age', col='blue')
+boxplot(ACTGwk24clean$age, main = 'Boxplot of age', xlab = 'age', col='blue')
+d <- density(ACTGwk24clean$age)
+plot(d, main = 'Density Plot of age', xlab = 'age')
+
+hist(ACTGwk24clean$hivRNA, main = 'Histogram of hivRNA', xlab = 'hivRNA', col='blue')
+boxplot(ACTGwk24clean$hivRNA, main = 'Boxplot of hivRNA', xlab = 'hivRNA', col='blue')
+d <- density(ACTGwk24clean$hivRNA)
+plot(d, main = 'Density Plot of hivRNA', xlab = 'hivRNA')
+
+hist(ACTGwk24clean$CD4, main = 'Histogram of CD4', xlab = 'CD4', col='blue')
+boxplot(ACTGwk24clean$CD4, main = 'Boxplot of CD4', xlab = 'CD4', col='blue')
+d <- density(ACTGwk24clean$CD4)
+plot(d, main = 'Density Plot of CD4', xlab = 'CD4')
+```
+
+
+Above we see univarite histograms, boxplots, and density plots for CD4, age, and hivRNA levels. Age and CD4 are approximately normally distributed, while hivRNA is strongly skewed. This conforms to what we would expect to see.
+
+```{r}
+ggplot(ACTGwk24clean, aes(age, CD4)) + geom_point() + geom_smooth()
+```
+For the residual plot above of age against CD4, we would expect to see a relationship of some kind, but don't see noticeable relationship here. Plot appears to almost like a residual plot.
+
+```{r, echo=FALSE, fig.width=12, fig.height=8}
+# create plots in this chunk
+library(ggplot2)
+boxplot(ACTGwk24clean$age[ACTGwk24clean$UDVLw24 == 1], main = 'Boxplot of age, UDVLw24=YES')
+boxplot(ACTGwk24clean$age[ACTGwk24clean$UDVLw24 == 0], main = 'Boxplot of age, UDVLw24=NO')
+
+ACTGwk24clean$UDVLw24 <- as.factor(ACTGwk24clean$UDVLw24)
+p <- ggplot(ACTGwk24clean, aes(x=UDVLw24, y=age)) +
+    geom_violin()
+p
+
+boxplot(ACTGwk24clean$CD4[ACTGwk24clean$UDVLw24 == 1], main = 'Boxplot of CD4, UDVLw24=YES')
+boxplot(ACTGwk24clean$CD4[ACTGwk24clean$UDVLw24 == 0], main = 'Boxplot of CD4, UDVLw24=NO')
+q <- ggplot(ACTGwk24clean, aes(x=UDVLw24, y=CD4)) +
+    geom_violin()
+q
+
+```
+
+Above we see box and violin plots for age and CD4 stratified by undetectable viral load at week 24. We can see perhaps more old people with the undetectable viral load, and those with higher CD4 values.
+**Table 1**
+
+```{r, message=FALSE}
+
+# In this chunk, perform the summaries needed to fill in the Table 1 shell
+# below.
+
+# You can use some of the tidyverse functions to create the needed summaries
+# such as ?summarize.
+
+
+ACTGclean0 <- ACTGbaseline %>%
+  filter(race %in% c('White')) %>%
+  filter(sex %in% c('M')) %>%
+  filter(Arm %in% c('B','C')) %>%
+  filter(ntisid %in% ACTGwk24clean$ntisid) %>%
+  mutate(treatment = case_when(Arm == 'B' ~ 'Raltegravir',
+                              Arm == "C" ~ "Ritonavir-Boosted Darunavir")) %>%
+  mutate(educ = case_when(educ == '12th grade or less' ~ 'High School or Less',
+                            educ == 'High school graduate or GED' ~ 'High School or Less',
+                            is.na(educ) ~ 'Unknown',
+                            TRUE ~ 'Some college or more') ) %>%
+  mutate(income = case_when(income == "$100,000 - $149,999" ~ '100,000 or more',
+                              income == "More than $150,000" ~ '100,000 or more',
+                            income == "$20,000 - $49,999"  ~ '20,000 to 99,999',
+                            income == "$50,000 - $99,999" ~ '20,000 to 99,999',
+                            income == "Less than $5,000"  ~ 'Less than 20,000',
+                            income == "$5,000 - $19,999" ~ 'Less than 20,000',
+                            income == "Less than $5,000" ~ 'Less than 20,000',
+                            income == "" ~ 'Missing',
+                            TRUE ~ 'Dont know/refused') ) %>%
+  mutate(income = factor(income, levels = c("Less than 20,000", "20,000 to 99,999", "100,000 or more", "Dont know/refused", "Missing"))) %>%
+  mutate(income = as.factor(income))
+
+
+i <- c(4,7,8,9,14,15,21)
+
+suppressMessages(library(gtsummary))
+df_table <- ACTGclean0[,i] %>%
+  dplyr::rename("Age" = 'age', 'Education' = 'educ', 'Income' = 'income', 'Prior AIDS diagnosis' = 'aids_dx',
+                'Baseline HIV-1 RNA (copies/mL)' = 'hivRNA', 'Baseline CD4+ (cells/mm3)' = 'CD4') 
+
+add_overall(tbl_summary(df_table, by=treatment))
+```
+
+
+
+<br>
+
+Since the table is randomnly stratified by arm, we expect to see relatively similar values in each of the arm strata for the above variables, which is roughly what we see here. We conclude that it is safe to continue. Below we see density plots and summary values for Age, hivRNA, and CD4.
+
+
+```{r, fig.width=12, fig.height=8}
+plot(density(df_table$Age), main='Density Plot of Age')
+plot(density(df_table$`Baseline HIV-1 RNA (copies/mL)`), main = 'Density Plot of HIV-1 RNA')
+plot(density(df_table$`Baseline CD4+ (cells/mm3)`), main = 'Density Plot of CD4')
+```
+
+Age appears more normally distributed, so will use mean(sd) for that metric, while HIVRNA and CD4 appear to show skew, thus we will use median and IQR for those variables.
+
+The mean of Age is `r round(mean(df_table$Age), 1)` and the standard deviation is `r round(sd(df_table$Age), 1)`.
+```{r}
+MedIQR <- function(xx, digs){  # summarize the median and IQR of a continuous
+                               # variable "xx". Round results to "digs" 
+    rslt <- round(c(median(xx, na.rm=TRUE), 
+                    quantile(xx, probs=c(1,3)/4, na.rm=TRUE)), digs)
+    paste0(rslt[1], " [", rslt[2], ", ", rslt[3], "]")  
+}
+
+MedIQR(df_table$`Baseline HIV-1 RNA (copies/mL)`, 1)
+MedIQR(df_table$`Baseline CD4+ (cells/mm3)`, 1)
+```
+
+
+Above we can see the output first for the IQR of HIVRNA and Second for CD4 levels.
+
+## Analysis Results for Aim 1
+
+### Aim 1A
+
+
+
+First, we construct a 2x2 table of the two treatment groups and week 24 undetectable viral load. 
+
+```{r Aim1a, results=TRUE}
+
+n_b0 <- length(ACTGwk24clean$UDVLw24[ACTGwk24clean$Arm=='B' & ACTGwk24clean$UDVLw24 == 0])
+n_b1 <- length(ACTGwk24clean$UDVLw24[ACTGwk24clean$Arm=='B' & ACTGwk24clean$UDVLw24 == 1])
+n_c0 <- length(ACTGwk24clean$UDVLw24[ACTGwk24clean$Arm=='C' & ACTGwk24clean$UDVLw24 == 0])
+n_c1 <- length(ACTGwk24clean$UDVLw24[ACTGwk24clean$Arm=='C' & ACTGwk24clean$UDVLw24 == 1])
+
+x <- c(n_b0, n_b1, n_c0, n_c1)
+
+df_UDVL <- data.frame(yes=c(n_b1, n_c1), no=c(n_b0, n_c0), row.names=c('raltegravir','ritonavir-boosted darunavir'))
+kable(df_UDVL)
+
+```
+
+
+Next, we calculate our point estimate for the odds ratio.
+
+
+$$\hat{OR} = \frac{n_{11}n_{22}}{n_{12}n_{n1}}  = \frac{123*32}{111*15} = 2.364$$
+
+Now, we calculate our 95% Confidence Interval for the log odds ratio, and exponentiate to obtain the actual confidence interval:
+
+$$log(\frac{123*32}{111*15}) \pm 1.96\sqrt(\frac{1}{123} + \frac{1}{111} + \frac{1}{32} + \frac{1}{15})  = (.1955, 1.525)$$
+
+Exponentiating gives $(1.22, 4.60)$ Since 1 is not a part of this confidence interval, we are confident that there is a difference in the odds between the two treatment groups. Since we have the odds of raltegravir in the numerator and ritonavir-based darunavir in the denominator, our interpretation of the point estimate of the odds ratio is that the odds of is that a patient randomized to raltegravir has 2.364 times the odds of obtaining undetectable week 24 viral load. Since this ratio is greater than 1, we have evidence that the INSTI raltegravir is suprerior to ritonavir-based darunavir.
+
+
+
+## Analysis Results for Aim 2
+
+### Aim 2A
+
+**Step 1**: Data Cleaning, EDA and model assumptions  
+
+Assume CD4 is normally distributed for both populations with equal variance
+
+Below we can see the mean, sd, and number of patients for CD4 measurements stratified by treatment arm.
+
+```{r Aim2a, results=TRUE}
+
+# Perform the analyses for Aim 2a here
+ACTGwk24clean %>%
+  group_by(Arm) %>%
+  summarize(Mean=mean(CD4), SD=sd(CD4), n = n()) %>%
+  data.frame() %>%
+  print(row.names=FALSE)
+
+```
+
+
+```{r}
+Y2 <- ACTGwk24clean$CD4[ACTGwk24clean$Arm == 'B']
+Y1 <- ACTGwk24clean$CD4[ACTGwk24clean$Arm == 'C']
+par(mfrow=c(2,2), mar=c(3, 3, 1, 1), mgp=c(2, 1, 0))
+plot(density(Y1), lwd=3, xlab="CD4 among treatment C", main="")
+  curve(dnorm(x, mean=mean(Y1), sd=sd(Y1)), add=TRUE, col=2, lwd=1)
+qqnorm(Y1, lwd=2, main="")
+  qqline(Y1, col=2, lwd=2)
+plot(density(Y2), lwd=3, xlab="CD4 among treatment B", main="")
+  curve(dnorm(x, mean=mean(Y2), sd=sd(Y2)), add=TRUE, col=2, lwd=1)
+qqnorm(Y2, lwd=2, main="")
+  qqline(Y2, col=2, lwd=2)
+```
+
+Our normality assumptions appear to hold, as week 24 CD4 appears to be normally distributed for both treatment groups.
+
+**Step 2**: Hypothesis
+$H_0: \mu_1 = \mu_2$ vs. $H_1: \mu_1 \neq \mu_2$, where $\mu_1$ is the mean CD4 for the control group, and $\mu_2$ is the mean CD4 for the treatment group.
+Define $\delta = \mu_1 - \mu_2$
+
+
+**Step 3**: Test Statistic
+
+The test statistic is
+
+$$T = \frac{(\bar{Y}_1 - \bar{Y}_2) - \delta_0}{\sqrt{\frac{S_p^2}{n_1} + \frac{S_p^2}{n_2}}} \sim t_{n_1 +n_2 -2} \textrm{ under } H_0.$$
+
+**Step 4**: Calculate test statistic, p-value, confidence interval
+The pooled variance is
+
+```{r, echo=FALSE}
+n1 <- length(Y1)
+n2 <- length(Y2)
+
+SD1 <- sd(Y1)
+SD2 <- sd(Y2)
+
+Yb1 <- mean(Y1)
+Yb2 <- mean(Y2)
+
+Spool <- sqrt( ((n1-1)*SD1^2 + (n2-1)*SD2^2) / ((n1-1) + (n2-1)) )
+```
+
+
+Note that the pooled SD is $\sqrt{`r round(Spool^2, 3)`} = `r round(Spool, 3)`$
+
+A 95% CI for the difference in population mean CD4 among those with Treatment B and Treatment C is
+
+$$(`r round(Yb1, 3)` - `r round(Yb2, 3)`) \pm `r round(qt(1-0.05/2, df=n1+n2-2), 3)` \sqrt{\frac{(`r round(Spool, 3)`)^2}{`r n1`} + \frac{(`r round(Spool, 3)`)^2}{`r n2`}} \; \Rightarrow \; (-36.48, 66.75)$$
+
+
+
+
+
+
+
+```{r, echo=FALSE}
+TT <- (Yb1-Yb2) / sqrt(Spool^2/n1 + Spool^2/n2)
+pval <- pt(TT, df=n1+n2-2) * 2
+```
+
+
+$$T = \frac{(`r round(Yb1, 3)` - `r round(Yb2, 3)`) - 0}{\sqrt{\frac{(`r round(Spool, 3)`)^2}{`r n1`} + \frac{(`r round(Spool, 3)`)^2}{`r n2`}}} = `r round(TT, 3)`$$
+
+The p-value is $2\times P(T< `r round(TT, 3)`) = `r round(pval, 5)`$
+
+Since our p-value is greater than .05 and 0 is containted in our confidence interval, we fail to reject the null hypothesis. We do not have evidence that there was a significant difference in mean CD4 between the two treatment groups.
+
+
+
+
+
+# References
+
+$^1$Lennox JL, et al. (2014), Efficacy and tolerability of 3 nonnucleoside reverse transcriptase inhibitor--sparing antiretroviral regimens for treatment-naive volunteers infected with HIV-1: A randomized, controlled equivalence trial, *Annals of Internal Medicine*, 161: 461-471. <https://doi.org/10.7326/M14-1084>
+
+
+
+
+
+# Session Info
+
+```{r}
+sessionInfo()
+```
+
+<br>
+
+--- END OF REPORT ---
