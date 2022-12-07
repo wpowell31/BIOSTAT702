@@ -1,0 +1,401 @@
+---
+title: "BIOSTAT 702 Homework 6 - Due 11/21/2022"
+author: "Will Powell"
+date: "11/11/2022"
+output:
+  bookdown::word_document2:
+    reference_docx: template_README_and_styles_3.docx
+    number_sections: no
+  html_document:
+    df_print: paged
+---
+
+```{r setup, echo=FALSE, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, fig.width=5, fig.height=5,
+    dpi=300)
+
+
+# ######################################################################### #
+##                                                                         ##
+##  Author: tina.davenport@duke.edu                                        ##
+##  Program: BIOSTAT702_HW06_Lname_Fname.rmd                               ##
+##  Purpose: This program drafts the homework and responses                ##
+##                                                                         ##
+##  Input files:  [list data or source files]                              ##
+##                                                                         ##
+##  Output files: BIOSTAT702_HW06_Lname_Fname.docx - Word file of answers  ##
+##                to homework.                                             ##
+##                                                                         ##
+##  Change Log:                                                            ##
+##  11/11/2022 File started                                                ##
+##                                                                         ##
+# ######################################################################### #
+
+library(tidyverse)
+library(lubridate)
+library(knitr)
+
+options(knitr.kable.NA="")
+options(max.print = .Machine$integer.max)  # don't limit console printing
+
+rm(list=ls())
+```
+
+
+
+
+# (16pts)
+
+Investigators hope to determine if a large dose of vitamin E will prevent cancer. The investigators will first conduct a feasibility study to determine the dosage of vitamin E. The investigators believe that 80% of participants on a high dose regimen will achieve adequate serum levels while 64% of those on a medium dose regimen will achieve adequate levels.
+
+
+A. (4pts) How much power would there be to test $H_0: \pi_1=\pi_2$ vs. $H_A: \pi_1 \neq \pi_2$, the difference in proportion of adequate serum vitamin E levels between the two dosage groups? Assume a two-sided 0.05 significance level and equal allocation of 50 per group. Show work for full credit. (Hint: the SE of the test statistic under $H_0$ is based on $\bar{p}$; see Section 6-6.)
+
+```{r}
+delt0 <- 0
+n1 <- 50
+p1 <- .8
+
+n2 <- 50
+p2 <- .64
+pbar <- (n1*p1 + n2*p2) / (n1+n2)
+
+deltA <- p1-p2
+
+LOW <- delt0 + qnorm(0.025) * sqrt((pbar*(1-pbar) / n1) + (pbar*(1-pbar) / n2) )
+UPP <- delt0 + qnorm(0.975) * sqrt((pbar*(1-pbar) / n1) + (pbar*(1-pbar) / n2) )
+
+
+#how get alternate standard error? use alternate definition of the ps?
+POW <- pnorm(LOW, mean=deltA, sd= sqrt((p1*(1-p1) / n1) + (p2*(1-p2) / n2) ) ) +
+  (1- pnorm(UPP, mean=deltA, sd= sqrt((p1*(1-p1) / n1) + (p2*(1-p2) / n2) ) ))
+
+POW
+
+
+```
+
+
+<br>
+
+
+
+B. (4pts) How large of a sample is needed to have 80% power in the scenario above? Assume equal allocation to the two arms.
+
+```{r}
+powerDiffProp <- function(delt0=0, p1, p2, n1, n2){
+  pbar <- (n1*p1 + n2*p2) / (n1+n2)
+  deltA <- p1-p2
+  LOW <- delt0 + qnorm(0.025) * sqrt((pbar*(1-pbar) / n1) + (pbar*(1-pbar) / n2) )
+  UPP <- delt0 + qnorm(0.975) * sqrt((pbar*(1-pbar) / n1) + (pbar*(1-pbar) / n2) )
+  
+  POW <- pnorm(LOW, mean=deltA, sd= sqrt((p1*(1-p1) / n1) + (p2*(1-p2) / n2) ) ) +
+    (1- pnorm(UPP, mean=deltA, sd= sqrt((p1*(1-p1) / n1) + (p2*(1-p2) / n2) ) ))
+  
+  return(POW)
+}
+
+for(i in 10:150){
+  print(i) 
+  print(powerDiffProp(0, .8, .64, i, i))
+}
+```
+
+Need 123 in each group.
+
+<br>
+
+
+
+C. (4pts) The researcher is on a tight budget and can only enroll 150 total. You suggest unequal allocation to the two groups to potentially increase power. What combination of unequal allocation yields the maximum power if the total sample size will be 150? What is the power at this combination? (shout out to DV for asking this question in class.)
+
+```{r}
+n1 <- 1:149
+n2 <- 150-n1
+power <- 1:149
+df_power <- data.frame(n1, n2, power)
+
+for(i in 1:149){
+  n1 <- df_power[i,1]
+  n2 <- df_power[i,2]
+  df_power[i,3] <- powerDiffProp(0, .8, .64, n1, n2)
+}
+
+df_power[df_power$power == max(df_power$power),]
+```
+
+The maximum power is obtained at the unequal allocation of 80 in group 1 and 70 in group 2.
+
+<br>
+
+
+
+D. (4pts) Explain **in words** in a way the researcher will understand why unequal allocation yields more power. Do NOT simply give your answer to C above! Articulate WHY your answer in C makes sense. (You're in an in-person meeting with the investigator and your laptop battery is dead.)
+
+In this problem we gain more information about the two groups by using the unequal allocation.
+
+<br>
+
+
+
+
+
+# (14pts)
+
+Assume that BMI among never smokers is $N(\mu_1, \sigma_1^2)$ and BMI among former/current smokers is $N(\mu_2, \sigma_2^2)$. The two populations are independent. Suppose a sample of $n_1=487$ never smokers was taken and the sample standard deviation of BMI was $S_1=5.3$. Suppose a sample of $n_2=239$ former/current smokers was taken and the sample standard deviation of BMI was $S_2=4.01$.
+
+<br>
+
+A. (5pts) Is the ratio of the two populations variances different from 1? Conduct a hypothesis test.
+
+Step 1: Assume that both populations are normal and independent
+
+Step 2: $H_0: \sigma_1^2 / \sigma_2^2 = 1$ vs. $H_1: \sigma_1^2 / \sigma_2^2 \neq 1$.
+
+Step 3: 
+
+$$F= \frac{S_1^2}{S_2^2} \cdot \frac{\sigma_2^2}{\sigma_1^2} = \frac{S_1^2}{S_2^2} \times  (1) =  \frac{S_1^2}{S_2^2} \sim F_{n_1-1, n_2-1} \textrm{ under } H_0.$$
+
+```{r}
+n1 <- 487
+n2 <- 239
+SD1 <- 5.3
+SD2 <- 4.01
+FF <- SD1^2 / SD2^2
+```
+
+Step 4: $F = (`r round(SD1, 3)`)^2 / (`r round(SD2, 3)`)^2 = `r round(FF,3)`$.
+
+Thus, the p-value is $2 \times P(F > `r round(FF,3)` | H_0)$.
+
+```{r, echo=TRUE}
+2*( 1 - pf(FF, df1=n1-1, df2=n2-1) )
+```
+
+<br>
+
+
+
+B. (5pts) Repeat the hypothesis above, switching the variances in the numerator and denominator of the ratio.
+
+Step 1: Assume that both populations are normal and independent
+
+Step 2: $H_0: \sigma_1^2 / \sigma_2^2 = 1$ vs. $H_1: \sigma_1^2 / \sigma_2^2 \neq 1$.
+
+Step 3: 
+
+$$F= \frac{S_1^2}{S_2^2} \cdot \frac{\sigma_2^2}{\sigma_1^2} = \frac{S_1^2}{S_2^2} \times  (1) =  \frac{S_1^2}{S_2^2} \sim F_{n_1-1, n_2-1} \textrm{ under } H_0.$$
+
+```{r}
+n1 <- 239
+n2 <- 487
+SD1 <- 4.01
+SD2 <- 5.3
+FF <- SD1^2 / SD2^2
+```
+
+Step 4: $F = (`r round(SD1, 3)`)^2 / (`r round(SD2, 3)`)^2 = `r round(FF,3)`$.
+
+Thus, the p-value is $2 \times P(F > `r round(FF,3)` | H_0)$.
+
+```{r, echo=TRUE}
+2*(pf(FF, df1=n1-1, df2=n2-1) )
+```
+
+<br>
+
+
+
+C. (4pts) Construct a 95% CI for the ratio of the two variances.
+
+```{r, echo=TRUE}
+(SD1^2/SD2^2) / qf(0.975, df1=n1-1, df2=n2-1)  # lower bound
+(SD1^2/SD2^2) / qf(0.025, df1=n1-1, df2=n2-1)  # upper bound
+```
+
+<br>
+
+
+
+
+
+# (20pts) Final Project
+
+**Section 4.2**: Draft and execute a statistical analysis plan for Aim 2a.
+
+<br>
+
+A. (10pts) Describe IN DETAIL an analytic approach that will compare the mean CD4 count at 24 weeks between the two treatment groups. An outline is given below. Use future tense.
+
+- Describe your assumptions about the two populations.
+- Describe your assumptions about the random variable, CD4 count, in these two populations. (HINT: see e.g., Section 5-3, 5-9, 5-21)
+- State the hypotheses you are testing.
+-	Describe IN DETAIL the primary analytic approach you will use. If you use a model, write out the model with descriptions of the components. If you use a t-test, write the test statistic and sampling distribution under the null.
+- Describe the inference you will draw if your sample favors the alternative.
+- Describe how you will check your assumptions. Describe a back-up plan (secondary approach) you will take if your data suggest the opposite variance assumption.
+
+<br>
+
+Note: your answer should be all words, as if you have not accessed the data yet. No R code or computations here. In your description, highlight where you address each bullet. For example, you might say "We will assume the population randomized to RAL and those randomized to RTV+DRV are independent. (**bullet 1**)"
+
+
+Our two populations are those randomized to ritonavir-boosted darunavir and those assigned to raltegravir. We are assuming that since these populations are randomnly assigned, there should not be a significant confounder present between the two populations. We are assuming that the assignment to groups is fixed, known (bullet 1), and that there is a random normally distributed sub-population of CD4 values for each treatment group. We are assuming that the variances of the CD4 values are equal, and that the values of the CD4 values are independent (bullet 2). 
+
+We test our hypothesis, $H_0: \mu_1 = \mu_2$ vs. $H_1: \mu_1 \neq \mu_2$, where $\mu_1$ is the mean CD4 for the control group, and $\mu_2$ is the mean CD4 for the treatment group. (bullet 3)
+
+For our analytical approach, we will use a two sample t-test for difference in means, with assumed equal population variances. (bullet 4)
+
+The test statistic is
+
+$$T = \frac{(\bar{Y}_1 - \bar{Y}_2) - \delta_0}{\sqrt{\frac{S_p^2}{n_1} + \frac{S_p^2}{n_2}}} \sim t_{n_1 +n_2 -2} \textrm{ under } H_0.$$
+
+If we have evidence to reject the Null Hypothesis, we will draw inference that there is significant evidence that there is a difference in mean CD4 values for the two treatment groups. (bullet 5)
+
+We will check the normality assumptions using histograms, and if these assumptions are violated we will consider using another test with a different distribution.
+
+
+<br>
+
+
+
+B (10pts) Perform the analyses you described for Aim 2. Present the results of the analyses and describe the findings and the inference. Construct a confidence interval for the difference in means and interpret it. Use past tense.
+
+- In the final analysis with appropriate data cleaning, how many individuals were in each sample?
+- Briefly describe the results of your assumption checks. Were the two population variances equal or unequal? What assumption did you ultimately choose after seeing the data? 
+-	What were the results of your primary analytic approach? (Give CIs and p-values)
+-	What do the results mean in the context of the problem? Do the results align with the hypothesis?
+-	Was secondary analyses needed? If so, did the inference from the primary and secondary analytic approaches align?
+
+<br>
+
+
+**Step 1**: Data Cleaning, EDA and model assumptions  
+
+Assume CD4 is normally distributed for both populations with equal variance
+
+```{r}
+#- 285, only not missing for CD4
+ACTG <- read.csv("ACTG_FinalProjectData.csv")
+
+ACTG$age[ACTG$age == 0] = NA
+ACTG$CD4[ACTG$CD4 < 0] = NA
+ACTG$hivRNA[ACTG$hivRNA < 0] = NA
+
+ACTGwk24 <- ACTG %>%
+  filter(race %in% c('White')) %>%
+  filter(sex %in% c('M')) %>%
+  filter(Arm %in% c('B','C')) %>%
+  filter(week %in% c(24)) %>%
+  filter(!is.na(age)) %>%
+  filter(!is.na(hivRNA)) %>%
+  filter(!is.na(CD4))
+
+ACTGwk0 <- ACTG %>%
+  filter(race %in% c('White')) %>%
+  filter(sex %in% c('M')) %>%
+  filter(Arm %in% c('B','C')) %>%
+  filter(week %in% c(0)) %>%
+  filter(!is.na(CD4)) %>%
+  filter(ntisid %in% ACTGwk24$ntisid) 
+
+
+
+#filter back week 0 to have 285
+  
+```
+
+We have 285 patients in the final cleaned data sample. 
+
+Below we can see the mean, sd, and number of patients for CD4 measurements stratified by treatment arm.
+
+```{r}
+ACTGwk24 %>%
+  group_by(Arm) %>%
+  summarize(Mean=mean(CD4), SD=sd(CD4), n = n()) %>%
+  data.frame() %>%
+  print(row.names=FALSE)
+
+```
+
+```{r}
+Y2 <- ACTGwk24$CD4[ACTGwk24$Arm == 'B']
+Y1 <- ACTGwk24$CD4[ACTGwk24$Arm == 'C']
+par(mfrow=c(2,2), mar=c(3, 3, 1, 1), mgp=c(2, 1, 0))
+plot(density(Y1), lwd=3, xlab="CD4 among treatment C", main="")
+  curve(dnorm(x, mean=mean(Y1), sd=sd(Y1)), add=TRUE, col=2, lwd=1)
+qqnorm(Y1, lwd=2, main="")
+  qqline(Y1, col=2, lwd=2)
+plot(density(Y2), lwd=3, xlab="CD4 among treatment B", main="")
+  curve(dnorm(x, mean=mean(Y2), sd=sd(Y2)), add=TRUE, col=2, lwd=1)
+qqnorm(Y2, lwd=2, main="")
+  qqline(Y2, col=2, lwd=2)
+```
+
+Our normality assumptions appear to hold, as week 24 CD4 appears to be normally distributed for both treatment groups.
+
+**Step 2**: Hypothesis
+$H_0: \mu_1 = \mu_2$ vs. $H_1: \mu_1 \neq \mu_2$, where $\mu_1$ is the mean CD4 for the control group, and $\mu_2$ is the mean CD4 for the treatment group.
+Define $\delta = \mu_1 - \mu_2$
+
+
+**Step 3**: Test Statistic
+
+The test statistic is
+
+$$T = \frac{(\bar{Y}_1 - \bar{Y}_2) - \delta_0}{\sqrt{\frac{S_p^2}{n_1} + \frac{S_p^2}{n_2}}} \sim t_{n_1 +n_2 -2} \textrm{ under } H_0.$$
+
+**Step 4**: Calculate test statistic, p-value, confidence interval
+The pooled variance is
+
+```{r, echo=FALSE}
+n1 <- length(Y1)
+n2 <- length(Y2)
+
+SD1 <- sd(Y1)
+SD2 <- sd(Y2)
+
+Yb1 <- mean(Y1)
+Yb2 <- mean(Y2)
+
+Spool <- sqrt( ((n1-1)*SD1^2 + (n2-1)*SD2^2) / ((n1-1) + (n2-1)) )
+```
+
+
+
+Note that the pooled SD is $\sqrt{`r round(Spool^2, 3)`} = `r round(Spool, 3)`$
+
+A 95% CI for the difference in population mean CD4 among those with Treatment B and Treatment C is
+
+$$(`r round(Yb1, 3)` - `r round(Yb2, 3)`) \pm `r round(qt(1-0.05/2, df=n1+n2-2), 3)` \sqrt{\frac{(`r round(Spool, 3)`)^2}{`r n1`} + \frac{(`r round(Spool, 3)`)^2}{`r n2`}} \; \Rightarrow \; (-43.22, 59.73)$$
+
+
+
+
+
+
+
+```{r, echo=FALSE}
+TT <- (Yb1-Yb2) / sqrt(Spool^2/n1 + Spool^2/n2)
+pval <- pt(TT, df=n1+n2-2) * 2
+```
+
+$$T = \frac{(`r round(Yb1, 3)` - `r round(Yb2, 3)`) - 0}{\sqrt{\frac{(`r round(Spool, 3)`)^2}{`r n1`} + \frac{(`r round(Spool, 3)`)^2}{`r n2`}}} = `r round(TT, 3)`$$
+
+The p-value is $2\times P(T< `r round(TT, 3)`) = `r round(pval, 5)`$
+
+Since our p-value is greater than .05 and 0 is containted in our confidence interval, we fail to reject the null hypothesis. We do not have evidence that there was a significant difference in mean CD4 between the two treatment groups.
+<br>
+
+
+
+
+
+# Session Info
+
+```{r}
+sessionInfo()
+```
+
+<br>
+
+--- END OF REPORT ---
