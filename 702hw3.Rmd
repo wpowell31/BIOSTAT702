@@ -1,0 +1,350 @@
+---
+title: "BIOSTAT 702 Homework 3 - Due 10/10/2022"
+author: "Fname Lname"
+date: "10/03/2022"
+output:
+  bookdown::word_document2:
+    reference_docx: template_README_and_styles_3.docx
+    number_sections: no
+  html_document:
+    df_print: paged
+---
+
+```{r setup, echo=FALSE, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, fig.width=5, fig.height=5)
+
+
+# ######################################################################### #
+##                                                                         ##
+##  Author: tina.davenport@duke.edu                                        ##
+##  Program: BIOSTAT702_HW03_Lname_Fname.rmd                               ##
+##  Purpose: This program drafts the homework and responses                ##
+##                                                                         ##
+##  Input files:  [list data or source files]                              ##
+##                                                                         ##
+##  Output files: BIOSTAT702_HW03_Lname_Fname.docx - Word file of answers  ##
+##                to homework.                                             ##
+##                                                                         ##
+##  Change Log:                                                            ##
+##  10/03/2022 File started                                                ##
+##                                                                         ##
+# ######################################################################### #
+
+library(tidyverse)
+library(lubridate)
+library(knitr)
+
+options(knitr.kable.NA="")
+options(max.print = .Machine$integer.max)  # don't limit console printing
+
+rm(list=ls())
+```
+
+
+# (5pts) Question
+
+Adapted from Daniel and Cross, #7.2.2: Researchers examined a sample of 16 individuals with glaucoma. The ages (years) of the individuals were
+
+```{r, echo=TRUE}
+Age <- c(62, 62, 68, 48, 51, 60, 51, 57,
+         57, 41, 62, 50, 53, 34, 62, 61)	
+```
+
+Assuming age is normally distributed in this population, is there evidence at the 0.1 level that the population mean age is less than 60 years? Conduct a hypothesis test. Perform all 5 steps in detail for full credit.
+
+
+Step 1. Know the data
+Assume $Age$ ~ $N(\mu, \sigma) $, and that we have reasonably normal values. We examine a histogram
+```{r}
+hist(Age, col='blue')
+```
+
+We can see that we have a small amount of data but that this assumption is relatively reasonable
+
+Step 2. Statistical Hypothesis
+$H_o: \mu=60$
+$H_a: \mu <60$
+
+Step 3. Test Statistic
+
+$T = \frac{\bar{Y} - \mu_0}{\frac{S}{\sqrt{n}}}$
+
+Step 4. Calculate Test Statistic and p-value
+```{r}
+t <- (mean(Age) - 60)/(sd(Age)/sqrt(length(Age)))
+
+p <- pt(t, length(Age)-1)
+
+t
+p
+```
+
+
+Step 5. Draw inference
+
+We can see that we obtain a t value of -2.28, and a p-value of .0187. This means that at the 0.1 level, we do have evidence to reject the null hypothesis that the true mean age is 60 years old.
+
+
+<br>
+
+
+# (15pts) Question
+
+(Adapted from Exam 1 practice problems) A researcher wants to test a new weight loss intervention. Her primary outcome is change in weight from enrollment to 6 months, measured as a percentage and normally distributed. She believes that lowering weight by 5% on average would be evidence that the new intervention works. She randomly samples 100 individuals from her target population, measures their weight at enrollment, then delivers the intervention to all participants for six months. At the end of six months, she measures weight and calculates the percent change in weight (100 × [follow-up – baseline] / baseline) for each participant and finds the sample mean and variance to be -1.80 and 26.01, respectively.
+
+
+A. (5pts) Is there evidence that the population mean percent change in weight is different from 0? Conduct a hypothesis test (give all 5 steps).
+
+
+Step 1. Know the data
+Here we are given that the data are normally distribited.
+
+Step 2. Statistical Hypothesis
+$H_o: \mu=0$
+$H_a: \mu \neq 0$
+
+Step 3. Test Statistic
+
+$T = \frac{\bar{Y} - \mu_0}{\frac{S}{\sqrt{n}}}$
+
+
+Step 4. Calculate Test Statistic and p value
+
+$T = \frac{\bar{Y} - \mu_0}{\frac{S}{\sqrt{n}}} = \frac{-1.8 - 0}{\frac{26.01}{\sqrt{100}}}$
+
+```{r}
+t <- (-1.8-0)/(sqrt(26.01)/sqrt(100))
+t
+
+p <- pt(t, 99) + 1-pt(-t, 99)
+p
+```
+
+Step 5. Draw Inference
+
+Our p value of `r p` is smaller than .05, we do have evidence to reject the null hypothesis, meaning that we have evidence that the mean change is different than 0. 
+
+<br>
+
+B. (5pts) Construct a 99% confidence interval for the population mean change in weight. Based on this interval, is there evidence that the intervention is clinically effective? Explain.
+
+```{r}
+-1.80 + qt(c(.005, .995), df=99) * sqrt(26.01)/sqrt(99)
+```
+
+Since 0 is not included in the confidence interval, we can be confident that the intervention does lead to a mean negative percent change in weight loss. However, if we are looking for at least 5% weight loss, we can be also be confident that this intervention does not meet this threshold.
+
+<br>
+
+C. (2pts) Perform Step 4 of the one-sided hypothesis test $H_0: \mu \ge -5$ vs. $H_A: \mu <-5$. (That is, compute the test statistic and p-value.)
+
+
+```{r}
+t <- (-1.8--5)/(sqrt(26.01)/sqrt(100))
+t
+
+p <- pt(t, 99) 
+p
+```
+
+<br>
+
+
+D. (3pts) Describe why the researcher could draw the conclusion in part (C) from this sample without performing any tests.
+
+
+Our sample mean value was -1.8, which is already greater than -5. Thus our sample mean is already considered under the null hypothesis, and we can already determing that a hypothesis test will not give us any reason to reject this null hypothesis. 
+
+<br>
+
+
+# (15pts) Question
+
+
+Review the description of the SWISS data from previous homework. Create the *cleaned* SWISS data using the code below.
+
+```{r}
+SWISS <- read.csv(file="SWISSlong.csv", na.strings="")
+
+SWISSwide <- SWISS %>%
+  filter(Year %in% c(68, 78)) %>%  # select the years of interest
+  select(partID, group, Year, eGFR)  %>%  # choose a few columns
+  reshape(v.names="eGFR",    # variable that will be multiple columns
+      timevar="Year",        # variable indicating replications
+      idvar="partID",        # variable indicating unique participants
+      direction="wide") %>%  # which direction to be converted to
+  mutate(eGFRchg=eGFR.78-eGFR.68)  # calculate change in eGFR
+```
+
+<br>
+
+
+A. (5pts) On average, do people lose kidney function from year 1968 to 1978? Support your answer with an appropriate hypothesis test.
+
+1. Know the Data
+
+```{r}
+hist(SWISSwide$eGFRchg, main = 'Histogram of change in eGFR', xlab = 'Change in eGFR', col='blue')
+boxplot(SWISSwide$eGFRchg, main = 'Boxplot of change in eGFR', xlab = 'Change in eGFR', col='blue')
+d <- density(na.omit(SWISSwide$eGFRchg))
+plot(d, main = 'Density Plot of change in eGFR', xlab = 'Change in eGFR')
+mean(na.omit(SWISSwide$eGFRchg))
+sd(na.omit(SWISSwide$eGFRchg))
+```
+
+We can see from above that the change in eGFR appears to be relatively normally distributed, with a mean of -7.49 and a standard deviation of 21.82
+
+2. Statistical Hypothesis
+
+$H_0: \mu = 0$ vs. $H_A: \mu < 0$ Where $\mu$ is the change in eGFR from 1968 to 1978.
+
+3. Test Statistic
+
+$T = \frac{\bar{Y} - \mu_0}{\frac{S}{\sqrt{n}}}$
+
+4. Calculate Test Statistic and p-value
+
+```{r}
+length(na.omit(SWISSwide$eGFRchg))
+t <- (mean(na.omit(SWISSwide$eGFRchg-0)))/(sd(na.omit(SWISSwide$eGFRchg))/sqrt(262))
+t
+
+p <- pt(t, 261) 
+p
+```
+
+5. Draw Inference
+
+Since of p-value of `r p`is smaller than .05, we are confident that the true mean change in eGFR is less than 0 from 1968 to 1978.
+
+<br>
+
+
+B. (10pts) It's normal for eGFR to decline by 1 ml/min/1.73m$^2$ per year. Is the SWISS sample consistent with this norm? Justify your answer with appropriate statistical tools and tests.
+
+To obtain the per year change in eGFR from the 10 year windows, we take the original SWISS sample and divide by 10. 
+
+1. Know the Data
+```{r}
+eGFR_yr <- na.omit(SWISSwide$eGFRchg)/10
+hist(eGFR_yr, main = 'Histogram of change in eGFR', xlab = 'Change in eGFR', col='blue')
+boxplot(eGFR_yr, main = 'Boxplot of change in eGFR', xlab = 'Change in eGFR', col='blue')
+d <- density(eGFR_yr)
+plot(d, main = 'Density Plot of change in eGFR', xlab = 'Change in eGFR')
+mean(eGFR_yr)
+sd(eGFR_yr)
+```
+
+2. Statistical Hypothesis
+
+$H_0: \mu = -1$ vs. $H_A: \mu \neq -1$ Where $\mu$ is the change in eGFR from 1968 to 1978.
+
+3. Test Statistic
+
+$T = \frac{\bar{Y} - \mu_0}{\frac{S}{\sqrt{n}}}$
+
+4. Calculate Test Statistic and p-value
+
+```{r}
+eGFR_yr <- na.omit(SWISSwide$eGFRchg)/10
+n <- length(eGFR_yr)
+mu <- mean(eGFR_yr)
+H0 <- -1
+s <- sd(eGFR_yr)
+t <- (mu-H0)/(s/sqrt(n))
+t
+
+p <- 2*pt(t, 261, lower.tail=FALSE) 
+p
+```
+
+
+5. Draw Inference
+
+Since our p value of .064 is greater than .05, we fail to reject our null hypothesis. We do not have evidence that the mean change in eGFR per year is different than -1.
+
+
+<br>
+
+# (15pts) FINAL PROJECT
+
+Review the final project SAP and the journal article describing the parent trial (both saved under "Resources" on Sakai). You will answer questions here as part of your homework. Once you receive your returned assignment with feedback, transfer the answers - incorporating any corrections necessary - to the appropriate section of the Final Project rmd.
+
+
+A. (4pts) **Section 1.4** Write the null and alternative hypotheses *in words* corresponding to Aim 1a and Aim 2a.
+
+Aim 1a: 
+  Null Hypothesis: Ritonavir-boosted darunavir has the same odds of undetectable 24-week viral load compared to raltegravir.                                          
+  Alternate Hypothesis: Ritonavir-boosted darunavir has different odds undetectable 24-week viral load compared to raltegravir.
+
+Aim 2a: 
+  Null Hypothesis: Ritonavir-boosted darunavir has the same mean 24-week CD4 count compared to raltegravir.                                                           
+  Alternate Hypothesis: Ritonavir-boosted darunavir has a different mean 24-week CD4 count compared to raltegravir.
+
+<br>
+
+B. (4pt) **Section 2 and 2.1** Describe the population of the parent study in paragraph form (see HW 1 as well). Describe who will be included/excluded from this population in the current study.
+
+
+The population of the parent study is people who have not received these treatments before who have HIV-1 RNA levels above the given threshold of 1000 copies/ml and enrolled in the trial. In this study, we will only include White Males who received ritonavir-boosted darunavir and raltegravir.
+
+<br>
+
+
+C. (4pt) **Section 2.2** Describe the study design of the parent study. Use as many descriptors that fit (e.g., experimental, observational, prospective, retrospective, longitudinal, cross-sectional, cohort, case-control, clinical trial, randomized, etc.). Describe the current study, using as many descriptors that fit.
+
+
+The parent study is a randomized prospective experimental clinical trial. The current study is a retrospective observational study.
+
+<br>
+
+
+D. (3pts) **Section 5**: Read in the ACTG data and create a dataset with only the baseline observations. Apply the exclusion criteria to this baseline dataset. How many participants did you start with? How many were excluded based on criterion 1? Of these, how many were excluded based on criterion 2? And so on.
+
+```{r, echo=FALSE}
+# read in and apply exclusion criteria. See ?filter within the dplyr package
+# (loaded automatically when you call tidyverse)
+ACTG <- read.csv("ACTG_FinalProjectData.csv")
+ACTGbaseline <- ACTG %>%
+  filter(week %in% c(0)) 
+nrow(ACTGbaseline)
+
+ACTGclean_1 <- ACTGbaseline %>%
+  filter(race %in% c('White')) 
+
+500-nrow(ACTGclean_1)
+
+ACTGclean_2 <- ACTGbaseline %>%
+  filter(sex %in% c('M')) 
+
+500-nrow(ACTGclean_2)
+
+ACTGclean_3 <- ACTGbaseline %>%
+  filter(Arm %in% c('B','C'))
+
+500-nrow(ACTGclean_3)
+
+ACTGclean_2 <- ACTGbaseline %>%
+  filter(race %in% c('White')) %>%
+  filter(sex %in% c('M')) %>%
+  filter(Arm %in% c('B','C'))
+  
+nrow(ACTGclean_2)
+```
+
+We start with 500 patients at baseline. When we only include white males that are in the two treatments, we have only 300 patients. Lastly when we only include patients that we received out treatments we are down to 300 patients. We excluded 42 patients because of race conditions, 19 because of sex conditions, and 171 because of the treatment exclusions.
+
+
+
+<br>
+
+
+# Session Info
+
+```{r}
+sessionInfo()
+```
+
+<br>
+
+--- END OF REPORT ---
