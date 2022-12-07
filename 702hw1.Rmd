@@ -1,0 +1,354 @@
+---
+title: "BIOSTAT 702 Homework 1"
+author: "Will Powell"
+date: "09/10/2022"
+output:
+  bookdown::word_document2:
+    reference_docx: "template_README_and_styles_3.docx"
+    number_sections: FALSE
+---
+
+```{r setup, echo=FALSE, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, fig.width=5, fig.height=5)
+
+
+# ######################################################################### #
+##                                                                         ##
+##  Author: tina.davenport@duke.edu                                        ##
+##  Program: BIOSTAT702_HW01_Lname_Fname.rmd                               ##
+##  Purpose: This program drafts the homework and responses                ##
+##                                                                         ##
+##  Input files:  [list data or source files]                              ##
+##                                                                         ##
+##  Output files: BIOSTAT702_HW01_Lname_Fname.docx - Word file of answers  ##
+##                to homework.                                             ##
+##                                                                         ##
+##  Change Log:                                                            ##
+##  09/10/2022 File started                                                ##
+##                                                                         ##
+# ######################################################################### #
+
+library(tidyverse)
+library(lubridate)
+library(knitr)
+
+options(knitr.kable.NA="")
+options(max.print = .Machine$integer.max)  # don't limit console printing
+
+rm(list=ls())
+```
+
+
+# Question (10pts)
+
+Below is a summary [of an article](https://doi.org/10.1016/j.xkme.2021.08.016):
+
+Little is known about how socioeconomic status (SES) relates to the prioritization of medical care spending over personal expenditures in individuals with multiple comorbid conditions, and whether this relationship differs between Black and non-Black individuals. We aimed to explore the relationship between SES, race, and medical spending among individuals with multiple comorbid conditions in a cross-sectional evaluation of baseline data from the **S**imultaneous Risk Factor Control Using **T**elehealth to Sl**o**w **P**rogression of **D**iabetic **K**idney **D**isease (STOP-DKD) study. STOP-DKD was a randomized controlled trial of adult patents seen at 7 Duke University primary care clinics with diabetes, uncontrolled hypertension, and evidence of kidney dysfunction. Participants underwent survey assessments inclusive of measures of sociodemographics and medical spending practices, asking about reduced spending on basic/leisure needs or using savings to pay for medical care. Multivariable logistic regression models stratified by race were used to determine the independent effects of SES components on medical spending habits.
+
+<br>
+
+A. (3pts) Is this a prospective or retrospective study? Justify your answer.
+
+  This is a retrospective study. The study notes how the data are taken from baseline data from the STOP-DKD study, meaning that data are taken from the present and past exposures as in a retrospective study.
+
+
+
+<br>
+
+B. (2pts) Describe the population from which the sample was drawn.
+
+  The sample draws from a population of subjects enrolled in the STOP-DKD study, a randomized controlled trial of adults that took place at 7 locations of Duke Hospitals. 
+
+
+<br>
+
+C. (2pts) What is/are the primary outcome(s) of the study? What is/are the primary exposure(s)?
+
+  The outcomes of the study are the spending trends related to medicine, which are analyzed based on the independent variables or exposures of baseline SES factors and race.
+
+
+
+
+<br>
+
+D. (3pts) Could a primary care physician reading this article use the results to draw conclusions about her patients in the UNC Health System? Why or why not?
+
+  The physician should be aware that while the information may be useful, they cannot necessarily draw conclusions about their patients in the UNC Health System. The UNC Health system may have a population with a different population makeup and different SES and race factors or other confounding variables that would make the relationships in the UNC Health System different.
+
+
+
+
+<br>
+
+# Question (10pts)
+
+Below is a summary [of the article](https://doi.org/10.1016/j.xkme.2021.08.016) describing the parent study of the **Final Project** data:
+
+Nonnucleoside reverse transcriptase inhibitor (NNRTI)–based antiretroviral therapy is not suitable for all treatment-naive HIV-infected persons. The objective of the study was to evaluate 3 NNRTI–sparing initial antiretroviral regimens to show equivalence for virologic failure and tolerability. The study was a phase 3, open-label study where participants were randomized in a 1:1:1 ratio to 3 treatments and followed for 96 weeks. Participants were treatment-naive persons aged 18 years or older with HIV-1 RNA levels greater than 1000 copies/ml without resistance to NNRTIs or protease inhibitors. The 3 regimens under study were emtricitabine plus tenofovir disoproxil fumarate (TDF) (Truvada) combined with 1) ritonavir-boosted atazanavir (Norvir+Reyataz), 2)	raltegravir (Isentress), and 3) ritonavir-boosted darunavir (Norvir+Prezista). Virologic failure was defined as a confirmed HIV-1 RNA level greater than 1000 copies/mL at or after 16 weeks and before 24 weeks or greater than 200 copies/mL at or after 24 weeks. Tolerability failure was defined as discontinuation of drugs for toxicity. 
+
+<br>
+
+A. (3pts) Is this a prospective or retrospective study? Justify your answer.
+
+  This is a prospective study. Subjects are randomized and assigned to a treatment and then followed up in the following weeks in order to determine an outcome.
+
+
+
+
+
+<br>
+
+B. (3pts) Describe the population from which the sample was drawn.
+
+  The population is people who have not received these treatments before who have HIV-1 RNA levels above the given threshold of 1000 copies/ml and enrolled in the trial.
+
+
+
+
+<br>
+
+C. (4pts) What is/are the primary outcome(s) of the study? What is/are the primary exposure(s)? Are these categorical or continuous variables?
+
+  The primary outcomes are the continuous variable HIV-1 RNA levels between 16 and 24 weeks after exposure defined as virologic failure, and whether of not drugs had to be abandoned due to the side effects being too strong, which is a discrete outcome variable. The primary exposure is the therapy the subjects were randomized to, which is a discrete variable.
+
+
+
+
+<br>
+
+
+# Question (3pts)
+
+A researcher is interested in investigating the relationship between lead exposure and behavioral problems in children aged 2-10 drawn from some population of interest. Would an experimental study or an observational study be more appropriate in this setting? Why?
+
+  The researcher should consider an observational study for this problem, due to ethical concerns. It would be unethical for a researcher to expose children to a condition that may cause behavioral problems, and there should be available data on existing lead exposures in children.
+
+
+
+
+<br>
+
+# Question (4pts)
+
+  A researcher is developing a novel medication reminder app that also tracks the user’s prescriptions and sends a reminder when it’s time for a refill. He would like your help to design an experimental study that shows his app improves prescription refill adherence better than having no app at all. He is worried that older people may not be as tech savvy and may not use the app correctly, thus biasing the results of the study. So he wants to assign people under 50 to use the app and people over 50 to having no app at all. Briefly (1-2 sentences) describe a possible consequence of this action. Give an example (1-2 sentences) of a more appropriate way to address the researcher’s concern.
+
+This action may be a poor decision that may introduce confounding into his experiment. The people under 50 may be more tech savy and see more effect in the outcome just based off of this alone and not necessarily the effectiveness of the app. The researcher should look to randomnly assign the patients into the two treatment groups, thus controlling for differences in age on their ability to use technology.
+
+
+
+
+<br>
+
+
+# Question (23pts)
+
+This problem reinforces the *visualize* concept in the VAI framework. Review the description of the SWISS data from Homework 0. Researchers are primarily interested in comparing *change in eGFR* from year 1968 to year 1978 between the three study groups. A secondary question is to determine the association between age at baseline and creatinine at baseline. 
+
+Read in the *cleaned* SWISS data that were generated when knitting Homework 0 (attached to this homework as well).
+
+```{r}
+SWISS <- read.csv(file="SWISSlong.csv", na.strings="")
+```
+
+To create the outcome, subset to the two years of interest, "reshape" the data from long to wide, then calculate the change in eGFR.
+
+```{r}
+SWISSwide <- SWISS %>%
+  filter(Year %in% c(68, 78)) %>%  # select the years of interest
+  select(partID, group, Year, eGFR)  %>%  # choose a few columns
+  reshape(v.names="eGFR",    # variable that will be multiple columns
+      timevar="Year",        # variable indicating replications
+      idvar="partID",        # variable indicating unique participants
+      direction="wide") %>%  # which direction to be converted to
+  mutate(eGFRchg=eGFR.78-eGFR.68)  # calculate change in eGFR
+```
+
+Note that lower values of eGFR are bad, so a negative value means worsening kidney function over time.
+
+<br>
+
+A. (2pts) Based on the description in Homework 0, how many unique participant IDs do you anticipate seeing in the data? How many are there in the SWISSwide dataset?
+
+```{r, echo=FALSE, include=FALSE}
+# Compute the number of unique participant IDs in this code chunk
+# see ?length and ?unique. Try and use these in some combination. See HW0
+# for hints as well
+
+# Notes:
+# echo=FALSE means don't print the code you used to get the number in the
+#   resulting Word document.
+# include=FALSE means don't print any results, output, or figures that
+#   would be generated in this code chunk into the Word document.
+
+# For the graders' sake, keep the printed R output to a minimum and instead,
+# write your answers in words using inline R code.
+
+unique_partids <- length(unique(SWISSwide$partID))
+SWISSwide
+
+```
+
+
+Based on the code from homework zero, we saw 3 groups with 100 participants for 300 participants. In the SWISSwide dataset we can see there are `r unique_partids` participants
+
+
+
+
+<br>
+
+
+B. (2pts) Based on the description in Homework 0, how many values of each study group do you anticipate seeing in the data? How many are there in the SWISSwide dataset?
+
+```{r, echo=FALSE, include=FALSE}
+# Compute the number of values of each study group in this code chunk
+# see ?table or ?count. Try one of these and see HW0 for hints as well
+
+length(SWISSwide[SWISSwide$group == 1,]$partID)
+```
+
+The description in the homework shows 100 participants in each of the groups. In SWISSwide, there are `r length(SWISSwide[SWISSwide$group == 1,]$partID)` in group 1, `r length(SWISSwide[SWISSwide$group == 2,]$partID)` in group 2, and `r length(SWISSwide[SWISSwide$group == 3,]$partID)` in group 3,
+
+
+
+
+<br>
+
+
+C. (4pts) What are plausible ranges of eGFR values? (If you don't know, Google.) Do you think humans *gain* or *lose* kidney function over time? Compute 5-number summaries (i.e., minimum, 25th percentile, median, 75th percentile and maximum), mean, and standard deviation of the eGFR values. Do they align with what you anticipate? Do most people in the study gain or lose kidney function over time?
+
+```{r, echo=FALSE}
+# compute summary statistics here
+# see ?summary. OR see ?min, ?quantile, ?median, ?max, ?mean, ?sd, etc.
+egfr <- c(SWISSwide$eGFR.68, SWISSwide$eGFR.78)
+min_egfr <- min(egfr, na.rm=TRUE)
+q25_egfr <- quantile(egfr, na.rm=TRUE, probs=0.25)
+med_egfr <- median(egfr, na.rm=TRUE)
+q75_egfr <- quantile(egfr, na.rm=TRUE, probs=0.75)
+max_egfr <- max(egfr, na.rm=TRUE)
+mean_egfr <- mean(egfr, na.rm=TRUE)
+sd_egfr <- sd(egfr, na.rm=TRUE)
+```
+
+
+An eGFR value less than \< 15 ml/min/1.73m$^2$ means that the kidney has likely failed, values less than this are highly unlikely. The summary statistics are min: `r min_egfr`, max: `r max_egfr`, 25th percentile: `r q25_egfr`, median: `r med_egfr`, 75th percentile: `r q75_egfr`, max: `r max_egfr`, mean: `r mean_egfr`, standard deviation: `r sd_egfr`
+
+
+
+
+<br>
+
+
+D. (2pts) How many missing values are in the eGFR variables and outcome? What questions might you ask the research in order to better understand these missing values?
+
+```{r, echo=FALSE, include=FALSE}
+# Compute number of missing values here
+# See ?summary OR see ?sum and ?is.na OR see ?count and ?is.na 
+
+missing_egfr68 <- sum(is.na(SWISSwide$eGFR.68))
+missing_egfr78 <- sum(is.na(SWISSwide$eGFR.78))
+missing_outcome <- sum(is.na(SWISSwide$eGFRchg))
+```
+
+There are `r missing_egfr68` missing eGFR variable values in 1968, `r missing_egfr78` missing eGFR variable values in 1978, corresponding to `r missing_outcome` missing outcome change values. We might need to ask the researcher why these values are missing and if this might compromise more of the data.
+
+
+
+
+<br>
+
+
+
+E. (4pts) Create histograms and/or density plots of the 3 eGFR variables. Describe what you see. Pay particular attention to the primary outcome.
+
+```{r, echo=FALSE, include=TRUE}
+# Make the plots here. I changed include=TRUE because here I DO want to see
+# the plots printed in the Word document.
+
+
+# see ?hist, ?density (wrapped in ?plot), and ?boxplot or the
+# ggplot equivalents (sorry, I mainly still plot in base R :) )
+
+library(ggplot2)
+
+
+SWISSwide$group <- as.factor(SWISSwide$group)
+ggplot(data=SWISSwide, aes(x=SWISSwide$eGFRchg, fill=group), na.rm=TRUE) + 
+  geom_density(alpha=0.6) + 
+  scale_fill_hue(labels=c('High NAPAP', 'LOW NAPAP', 'Control'))
+
+```
+
+
+We can see that Low NAPAP and the Control group have roughly the same peak probability and distribution. We can see that the group for High NAPAP has a greater spread and has more values towards the extreme negative of change of eGFR levels.
+
+
+
+<br>
+
+
+F. (3pts) What relationship do you anticipate seeing between study group and change in eGFR? Write your answer in the context of the problem. Use the actual group descriptions from Homework 0 (e.g., "I anticipate those in the control group to...") rather than "group 1" or "group 2".
+
+I would anticipate those in the study groups with increasing NAPAP exposure to have worse kidney function, or a greater negative change in eGFR. That is, I expect for the control group to have the the least negative in eGFR, followed by Low NAPAP having a more negative change and High NAPAP having the most negative change in eGFR.
+
+
+
+<br>
+
+
+G. (3pts) Create boxplots and/or violin plots of the change in eGFR by study group. Does the relationship align with what you anticipated seeing?
+
+```{r, echo=FALSE, include=TRUE}
+# Use this chunk to produce the plots. 
+# See ?boxplot. For violin plots in base R, install the package "vioplot".
+# It works similarly to the ?boxplot function. Or use the ggplot versions.
+
+library(ggplot2)
+SWISSwide$group <- as.factor(SWISSwide$group)
+ggplot(data=SWISSwide, aes(x=group, y=eGFRchg), na.rm=TRUE) + 
+  geom_boxplot()
+
+
+```
+
+The plots do not necessarily align with what I anticipated seeing. While the the High NAPAP group has more negative change in eGFR than the Low NAPAP group as expected, it is not significantly different in appearance on the boxplot than the Control group, which is not what I would expect. Note that in the above figure Group 1 is the High NAPAP, Group 2 is the low NAPAP, and group 3 is the Control group.
+
+
+
+<br>
+
+
+
+H. (3pts) Create pairwise scatter plots of age, creatinine, and eGFR at baseline (year 1968). What relationship between age and creatinine did you anticipate seeing? Describe the relationship you observe from the plot.
+
+```{r, echo=FALSE, include=TRUE}
+# Use this chunk to make the plot
+# see ?pairs in base R or Lecture 1 rmd for a (fairly complex) ggplot
+# example.
+# But first you will need to ?filter the SWISS data. See above for an
+# example.
+library('ggplot2')
+library('GGally')
+cols <- c(2,5,7)
+SWISS_68 <- SWISS[SWISS$Year == 68,]
+SWISS_68 <- SWISS_68[complete.cases(SWISS_68[,cols]),cols]
+ggpairs(SWISS_68)
+
+```
+
+I would anticipate the creatinine levels to increase with age as peoples conditions worsen over time. We can see this trend slightly appear in the above scattetplot, as there are more values with higher creatinine levels in older people.
+
+
+
+
+<br>
+
+
+# Session Info
+
+```{r}
+sessionInfo()
+```
+
+<br>
+
+--- END OF REPORT ---
