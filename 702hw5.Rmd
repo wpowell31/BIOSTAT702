@@ -1,0 +1,293 @@
+---
+title: "BIOSTAT 702 Homework 5 - Due 11/07/2022"
+author: "Will Powell"
+date: "10/24/2022"
+output:
+  bookdown::word_document2:
+    reference_docx: "template_README_and_styles_3.docx"
+    number_sections: FALSE
+---
+
+```{r setup, echo=FALSE, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, fig.width=5, fig.height=5,
+    dpi=300)
+
+
+# ######################################################################### #
+##                                                                         ##
+##  Author: tina.davenport@duke.edu                                        ##
+##  Program: BIOSTAT702_HW05_Lname_Fname.rmd                               ##
+##  Purpose: This program drafts the homework and responses                ##
+##                                                                         ##
+##  Input files:  [list data or source files]                              ##
+##                                                                         ##
+##  Output files: BIOSTAT702_HW05_Lname_Fname.docx - Word file of answers  ##
+##                to homework.                                             ##
+##                                                                         ##
+##  Change Log:                                                            ##
+##  10/24/2022 File started                                                ##
+##                                                                         ##
+# ######################################################################### #
+
+library(tidyverse)
+library(lubridate)
+library(knitr)
+
+options(knitr.kable.NA="")
+options(max.print = .Machine$integer.max)  # don't limit console printing
+
+rm(list=ls())
+```
+
+# (8pts)
+
+Review the description of the SWISS data from previous homework. Create the *cleaned* SWISS data using the code below.
+
+```{r}
+setwd("/Users/willpowell/Desktop/Biostat701")
+SWISS <- read.csv(file="SWISSlong.csv", na.strings="")
+
+SWISSwide <- SWISS %>%
+  filter(Year %in% c(68, 78)) %>%  # select the years of interest
+  select(partID, group, Year, ageBL, eGFR)  %>%  # choose a few columns
+  reshape(v.names="eGFR",    # variable that will be multiple columns
+      timevar="Year",        # variable indicating replications
+      idvar="partID",        # variable indicating unique participants
+      direction="wide") %>%  # which direction to be converted to
+  mutate(eGFRchg=eGFR.78-eGFR.68)  # calculate change in eGFR
+```
+
+<br>
+
+Is there evidence that the correlation between age at baseline and change in eGFR from year 1968 to 1978 is non-zero? Conduct a hypothesis test. Perform all 5 steps in detail for full credit. Give visualizations to support Step 1. (Note: if you think any assumptions are violated, say so, but perform the test anyway.)
+
+
+Step 1. Know the data 
+```{r}
+hist(na.omit(SWISSwide$eGFRchg), main = 'Histogram of change in eGFR', xlab = 'Change in eGFR', col='blue')
+boxplot(na.omit(SWISSwide$eGFRchg), main = 'Boxplot of change in eGFR', xlab = 'Change in eGFR', col='blue')
+d <- density(na.omit(SWISSwide$eGFRchg))
+plot(d, main = 'Density Plot of change in eGFR', xlab = 'Change in eGFR')
+
+hist(na.omit(SWISSwide$ageBL), main = 'Histogram of baseline age', xlab = 'baseline age', col='blue')
+boxplot(na.omit(SWISSwide$ageBL), main = 'Boxplot of baseline age', xlab = 'baseline age', col='blue')
+e <- density(na.omit(SWISSwide$ageBL))
+plot(e, main = 'Density Plot of age', xlab = 'age')
+plot(SWISSwide$ageBL, SWISSwide$eGFRchg, main="Scatterplot Age vs Change in eGFR",
+   xlab="Age ", ylab="Change in eGFR", pch=19)
+#lines(lowess(SWISSwide$ageBL, SWISSwide$eGFRchg), col="blue") # lowess line (x,y)
+#add in scatterplot
+```
+Outcome variables appear to be normally distributed, safe to proceed.
+<br>
+
+2. Statistical Hypothesis
+
+$H_0: \beta_1 = 0$ vs. $H_A: \beta \neq 0$ Where $\beta$ is the slope between age baseline and change in eGFR.
+
+3. Test Statistic
+
+$T = \frac{\hat\beta_1 - 0}{SE(\hat\beta_1)} = R\sqrt{\frac{n-2}{1-R^2}}$
+
+Step 4. Calculate Test Statistic
+
+```{r}
+dat <- na.omit(SWISSwide)
+TT<- cor(dat$eGFRchg, dat$ageBL) * sqrt( (nrow(dat)-2) / (1-cor(dat$eGFRchg, dat$ageBL)^2) )
+TT
+```
+
+
+Step 5. Calculate p-value
+```{r}
+2* pt(TT, df=nrow(dat)-2)
+```
+
+Since our p-value is greater than .05, we fail to reject the null hypothesis. We do not have evidence that there is an association between age at baseling and change in eGFR.
+
+<br>
+
+# (27pts)
+
+Regress change in eGFR on age at baseline.
+
+A. (10pts) Plot the 5 diagnostic figures we discussed in class. Describe what you hope to see in each figure and what you observe in each figure.
+
+```{r}
+model <- lm(eGFRchg ~ ageBL, data=SWISSwide)
+plot(model)
+plot(model, which=4, pch=20, lwd=2)
+```
+1. Residual plot - hope to see random residuals centered around zero with uniform variance across fitted values, which is what we appear to see here.
+
+<br>
+
+2. Normal Q-Q plot - Here we hope to see values that do not stray far from their expected quantiles along the normal distribution line. Here we see some deviations among the extreme values, but no large trends making it likely that normality assumptions for eGFR change hold. 
+
+<br>
+
+3.) Root of standardized plot - Here we hope to see a random scatter and a flat smoother which is what we see here. Seeing a trend upward or downward here would indicate a violation of homodescedastity. 
+
+<br>
+
+4.) Residuals vs Leverage Plot - We hope to see generally no trend here as well, which is what we appear to see. Points with large leverage and a large residual could potentially have a large impact on the regression line.
+
+<br>
+
+5.) Cook's distance plot - Here we hope to see no points with a large distance that would have a larger than expected impact on the fit of the regression line. Here a couple points may be problematic, such as especially point 273 which may require further investigation.
+
+
+B. (4pts) Interpret the estimate of the slope. Is there a linear association between age at baseline and change in eGFR? Justify your answer using details from the output.
+
+```{r}
+summary(model)
+```
+
+The slope is -.1339. The expected change in change in eGFR people who differ in age by one year is -.1339 ml/min/1.73m\^2. 
+The slope has a p-value of .583. Given this, we can determine that we fail to reject the null that there is a significant association. 
+
+<br>
+
+C. (5pts) Given that eGFR generally steadily declines by 1 ml/min/1.73m\^2 each year, are the results of the regression model between age and *change in* eGFR anticipated? Explain why or why not.
+
+The results of the regression are essentially what we would anticipate. Given that eGFR change is generally supposed to be steadily changing, we would expect a slope near zero, which is what we observe in our model. 
+
+<br>
+
+D. (4pts) Is the interpretation of the intercept meaningful? If so, interpret it, if not, explain why not.
+
+The intercept is -1.8682. This would theoretically mean that someone zero years old would have a change in eGFR of -1.8682, which is not meaningful since the metric is a change in eGFR, and if you are starting at zero there is no value to change from so the intercept is not meaningful. Also no one in our study has an age near to zero, so we can not draw meaning here.
+
+<br>
+
+E. (4pts) Is the model useful for prediction? Explain why or why not.
+
+The model is not useful for prediction. The slope is close to zero, which is poor for predictions, and also the R-squared value is very small. This means that we would have large variability in our predictions, so it is not useful.
+
+<br>
+
+# (5pts)
+
+Those with higher eGFR at year 1968 tend to have faster decline in eGFR by year 1978, while those with lower eGFR at year 1968 tend to have slower decline in eGFR by year 1978. (Optional: confirm by looking at a scatter plot and/or fitting a model.)
+
+Google/research "regression towards the mean". How might regression towards the mean apply in this situation? Hint: think about individuals' eGFR at year 1968 and the mean eGFR at year 1978.
+
+```{r}
+head(SWISSwide)
+mean(na.omit(SWISSwide$eGFR.68))
+mean(na.omit(SWISSwide$eGFR.78))
+```
+The mean eGFR in 1978 is lower than the mean eGFR in 1968. Thus those with higher eGFR values will have a greater drop in order to regress back to the mean, while those with lower values will not drop as much as they are already closer to the mean on average.
+
+<br>
+
+# (10pts) Final Project
+
+**Section 5, Table 1**: Populate the table shell given (you may remove "sex" from the table). Collapse categorical variables as described in Section 3 of the SAP and in the table shell. For continuous variables, use visualization techniques to determine the appropriate location (spread) summary (i.e., choose either mean (sd) or median (25th, 75th)). Round to 1 decimal place.
+
+
+Should be 281 people.
+use week zero data - filter people missing week 24
+
+```{r, echo=TRUE, include=TRUE}
+
+# In this chunk, perform the summaries needed to fill in the Table 1 shell
+# below.
+
+# You can use some of the tidyverse functions to create the needed summaries
+# such as ?summarize.
+# I'm not familiar with these functions, so I'm providing examples of quick
+# functions you can write yourself to get the sumamries. 
+ACTG <- read.csv("ACTG_FinalProjectData.csv")
+ACTGbaseline <- ACTG %>%
+  filter(week %in% c(0)) 
+
+ACTG$age[ACTG$age == 0] = NA
+ACTG$CD4[ACTG$CD4 < 0] = NA
+ACTG$hivRNA[ACTG$hivRNA < 0] = NA
+
+ACTGwk24 <- ACTG %>%
+  filter(race %in% c('White')) %>%
+  filter(sex %in% c('M')) %>%
+  filter(Arm %in% c('B','C')) %>%
+  filter(week %in% c(24)) %>%
+  filter(!is.na(age)) %>%
+  filter(!is.na(hivRNA)) %>%
+  filter(!is.na(CD4))
+
+#mutate - case_when
+ACTGclean0 <- ACTGbaseline %>%
+  filter(race %in% c('White')) %>%
+  filter(sex %in% c('M')) %>%
+  filter(Arm %in% c('B','C')) %>%
+  filter(ntisid %in% ACTGwk24$ntisid) %>%
+  mutate(treatment = case_when(Arm == 'B' ~ 'Raltegravir',
+                              Arm == "C" ~ "Ritonavir-Boosted Darunavir")) %>%
+  mutate(educ = case_when(educ == '12th grade or less' ~ 'High School or Less',
+                            educ == 'High school graduate or GED' ~ 'High School or Less',
+                            is.na(educ) ~ 'Unknown',
+                            TRUE ~ 'Some college or more') ) %>%
+  mutate(income = case_when(income == "$100,000 - $149,999" ~ '100,000 or more',
+                              income == "More than $150,000" ~ '100,000 or more',
+                            income == "$20,000 - $49,999"  ~ '20,000 to 99,999',
+                            income == "$50,000 - $99,999" ~ '20,000 to 99,999',
+                            income == "Less than $5,000"  ~ 'Less than 20,000',
+                            income == "$5,000 - $19,999" ~ 'Less than 20,000',
+                            income == "Less than $5,000" ~ 'Less than 20,000',
+                            income == "" ~ 'Missing',
+                            TRUE ~ 'Dont know/refused') ) %>%
+  mutate(income = factor(income, levels = c("Less than 20,000", "20,000 to 99,999", "100,000 or more", "Dont know/refused", "Missing"))) %>%
+  mutate(income = as.factor(income))
+
+
+i <- c(4,7,8,9,14,15,21)
+
+
+```
+
+```{r, echo=FALSE}
+suppressMessages(library(gtsummary))
+df_table <- ACTGclean0[,i] %>%
+  dplyr::rename("Age" = 'age', 'Education' = 'educ', 'Income' = 'income', 'Prior AIDS diagnosis' = 'aids_dx',
+                'Baseline HIV-1 RNA (copies/mL)' = 'hivRNA', 'Baseline CD4+ (cells/mm3)' = 'CD4') 
+
+add_overall(tbl_summary(df_table, by=treatment))
+```
+
+
+```{r}
+plot(density(df_table$Age))
+plot(density(df_table$`Baseline HIV-1 RNA (copies/mL)`))
+plot(density(df_table$`Baseline CD4+ (cells/mm3)`))
+```
+
+Age appears more normally distributed, so will use mean(sd) for that metric, while HIVRNA and CD4 appear to show skew, thus we will use median and IQR for those variables.
+
+
+The mean of Age is `r round(mean(df_table$Age), 1)` and the standard deviation is `r round(sd(df_table$Age), 1)`.
+```{r}
+MedIQR <- function(xx, digs){  # summarize the median and IQR of a continuous
+                               # variable "xx". Round results to "digs" 
+    rslt <- round(c(median(xx, na.rm=TRUE), 
+                    quantile(xx, probs=c(1,3)/4, na.rm=TRUE)), digs)
+    paste0(rslt[1], " [", rslt[2], ", ", rslt[3], "]")  
+}
+
+MedIQR(df_table$`Baseline HIV-1 RNA (copies/mL)`, 1)
+MedIQR(df_table$`Baseline CD4+ (cells/mm3)`, 1)
+```
+
+
+Above we can see the output first for the IQR of HIVRNA and Second for CD4 levels.
+
+<br>
+
+# Session Info
+
+```{r}
+sessionInfo()
+```
+
+<br>
+
+--- END OF REPORT ---
